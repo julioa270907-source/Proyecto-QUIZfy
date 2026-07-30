@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Center Avatar Studio & Quizfy</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-layout">
+
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="brand-icon">⚡</span>
+                <div class="brand-text">
+                    <h2>QUIZfy ADMIN</h2>
+                    <span class="badge-status">v2.0</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="menu-group">
+                    <button class="dropdown-header active" data-target="menu-avatars">
+                        <span>Avatares & Accesorios</span>
+                        <span class="arrow">▾</span>
+                    </button>
+                    <div class="submenu open" id="menu-avatars">
+                        <button type="button" class="nav-item active" data-view="view-offset">
+                            Editor de Offset
+                        </button>
+                        <button type="button" class="nav-item" data-view="view-personajes">
+                            Personajes
+                        </button>
+                        <button type="button" class="nav-item" data-view="view-items">
+                            Accesorios / Ítems
+                        </button>
+                    </div>
+                </div>
+
+                <div class="menu-group">
+                    <button class="dropdown-header" data-target="menu-quizzes">
+                        <span>Quizzes & Trivia</span>
+                        <span class="arrow">▾</span>
+                    </button>
+                    <div class="submenu" id="menu-quizzes">
+                        <button type="button" class="nav-item" data-view="view-quiz-dashboard">
+                            Quiz Dashboard & Stats
+                        </button>
+                        <button type="button" class="nav-item" data-view="view-quiz-categorias">
+                            Categorías de Quiz
+                        </button>
+                        <button type="button" class="nav-item" data-view="view-quiz-gestion">
+                            Crear / Gestionar Quiz
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-pill">
+                    <span class="user-avatar">👑</span>
+                    <div class="user-info">
+                        <span class="user-name">Admin</span>
+                        <span class="user-role">Conectado</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-wrapper">
+            <header class="topbar">
+                <h1 id="current-view-title">Editor de Offset</h1>
+                <div class="topbar-actions">
+                    <span class="pulse-indicator"></span> Servidor BD: Activo
+                </div>
+            </header>
+
+            <div class="content-body">
+
+                <section id="view-offset" class="view-section active">
+                    <div class="view-header">
+                        <div>
+                            <h2>Studio Offset Editor</h2>
+                        </div>
+                        <div class="hud-status-badge">
+                            <span class="pulse-dot"></span> STUDIO MODE ACTIVE
+                        </div>
+                    </div>
+
+                    <div class="offset-studio-container">
+                        <div class="card studio-panel">
+                            <div class="panel-group">
+                                <h3 class="panel-title"><span class="icon">🎯</span> 1. Selección de Objetivo</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Personaje Base:</label>
+                                        <select id="selectPersonaje" name="personaje_base">
+                                            <option value="">Cargando personajes...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Accesorio / Ítem:</label>
+                                        <select id="selectItem" name="item_objetivo">
+                                            <option value="">Cargando ítems...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="panel-divider">
+
+                            <div class="panel-group">
+                                <h3 class="panel-title"><span class="icon">📐</span> 2. Transformación de Capa</h3>
+                                
+                                <div class="control-row">
+                                    <div class="control-label">
+                                        <span>Ancho (Width)</span>
+                                        <span class="unit-badge">PX</span>
+                                    </div>
+                                    <div class="control-inputs">
+                                        <input type="range" id="sliderWidth" name="sliderWidth" min="20" max="400" value="100">
+                                        <input type="number" id="numWidth" name="numWidth" min="20" max="400" value="100" class="num-input">
+                                    </div>
+                                </div>
+
+                                <div class="control-row">
+                                    <div class="control-label">
+                                        <span>Posición Y (Top)</span>
+                                        <span class="unit-badge">PX</span>
+                                    </div>
+                                    <div class="control-inputs">
+                                        <input type="range" id="sliderTop" name="sliderTop" min="-150" max="300" value="0">
+                                        <input type="number" id="numTop" name="numTop" min="-150" max="300" value="0" class="num-input">
+                                    </div>
+                                </div>
+
+                                <div class="control-row">
+                                    <div class="control-label">
+                                        <span>Posición X (Left)</span>
+                                        <span class="unit-badge">PX</span>
+                                    </div>
+                                    <div class="control-inputs">
+                                        <input type="range" id="sliderLeft" name="sliderLeft" min="-150" max="300" value="0">
+                                        <input type="number" id="numLeft" name="numLeft" min="-150" max="300" value="0" class="num-input">
+                                    </div>
+                                </div>
+
+                                <div class="control-row">
+                                    <div class="control-label">
+                                        <span>Rotación</span>
+                                        <span class="unit-badge">DEG °</span>
+                                    </div>
+                                    <div class="control-inputs">
+                                        <input type="range" id="sliderRotate" name="sliderRotate" min="-180" max="180" value="0">
+                                        <input type="number" id="numRotate" name="numRotate" min="-180" max="180" value="0" class="num-input">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="panel-divider">
+
+                            <div class="panel-group">
+                                <h3 class="panel-title"><span class="icon">⚡</span> 3. Alineación y Comandos</h3>
+                                <div class="action-grid">
+                                    <button type="button" class="btn btn-secondary btn-sm" id="btnCentrarX">↔️ Centrar X</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" id="btnResetAjustes">🔄 Resetear</button>
+                                </div>
+                                <button type="button" class="btn btn-primary full-width" style="margin-top: 12px;" id="btnGuardarAjuste">
+                                    💾 Guardar Posición Exacta
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card studio-viewport-card">
+                            <div class="viewport-header">
+                                <span class="viewport-title">CANVAS STAGE (BOUNDING BOX 1:1)</span>
+                                <span class="viewport-scale">300 x 300 px</span>
+                            </div>
+
+                            <div class="avatar-preview-box" id="previewBox">
+                                <div class="hud-corner top-left"></div>
+                                <div class="hud-corner top-right"></div>
+                                <div class="hud-corner bottom-left"></div>
+                                <div class="hud-corner bottom-right"></div>
+
+                                <div class="hud-crosshair-v"></div>
+                                <div class="hud-crosshair-h"></div>
+
+                                <div class="avatar-stage">
+                                    <img id="stagePersonaje" src="" alt="Personaje Base" style="display: none;">
+                                    <img id="stageItem" src="" alt="Accesorio / Item" style="display: none;">
+                                </div>
+                            </div>
+
+                            <div class="telemetry-bar">
+                                <div class="telemetry-item">W: <span id="telemetryW">100</span>px</div>
+                                <div class="telemetry-item">X: <span id="telemetryX">0</span>px</div>
+                                <div class="telemetry-item">Y: <span id="telemetryY">0</span>px</div>
+                                <div class="telemetry-item">R: <span id="telemetryR">0</span>°</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="view-personajes" class="view-section">
+                    <div class="cards-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>➕ Nuevo Personaje</h3>
+                            </div>
+                            <form id="form-personaje">
+                                <div class="form-group">
+                                    <label for="p_nombre">Nombre del Personaje</label>
+                                    <input type="text" id="p_nombre" name="p_nombre" placeholder="Ej: Guerrero, Mago..." required>
+                                </div>
+
+                                <div class="form-group custom-file-upload">
+                                    <label for="p_imagen" class="btn-file">📁 Seleccionar Imagen</label>
+                                    <input type="file" id="p_imagen" name="p_imagen" accept="image/*" required>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary full-width" style="margin-top: 10px;">💾 Guardar Personaje</button>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <h3>🐱 Personajes Registrados</h3>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Ruta</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-personajes-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="view-items" class="view-section">
+                    <div class="cards-grid">
+                        <div class="card">
+                            <h3>👑 Crear Accesorio / Ítem</h3>
+                            <form id="form-item">
+                                <div class="form-group">
+                                    <label>Nombre del Accesorio</label>
+                                    <input type="text" id="i-nombre" name="i_nombre" required placeholder="Ej: Sombrero de Mago">
+                                </div>
+                                <div class="form-group">
+                                    <label>Categoría</label>
+                                    <select id="i-categoria" name="i_categoria">
+                                        <option value="Cabeza">Cabeza</option>
+                                        <option value="Rostro">Rostro</option>
+                                        <option value="Otros">Otros</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Precio ($)</label>
+                                    <input type="number" id="i-precio" name="i_precio" value="100" min="0">
+                                </div>
+                                <div class="form-group custom-file-upload">
+                                    <label for="svg_file" class="btn-file">📁 Elegir Archivo SVG</label>
+                                    <input type="file" id="svg_file" name="svg_file" accept=".svg" required>
+                                </div>
+                                <button type="submit" class="btn btn-success full-width">Guardar Accesorio</button>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <h3>👑 Lista de Accesorios</h3>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Categoría</th>
+                                        <th>Precio</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-items-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="view-quiz-dashboard" class="view-section">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-icon">🧠</span>
+                            <div>
+                                <p id="statQuizzes">0</p>
+                                <span>Quizzes Totales</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-icon">📁</span>
+                            <div>
+                                <p id="statCategorias">0</p>
+                                <span>Categorías</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-bottom:15px; color:#fff;">Quizzes Creados</h3>
+                    <div class="quiz-grid" id="quizDashboardGrid"></div>
+                </section>
+
+                <section id="view-quiz-categorias" class="view-section">
+                    <div class="cards-grid">
+                        <div class="card">
+                            <h3>📁 Crear Categoría de Trivia</h3>
+                            <form id="form-categoria">
+                                <div class="form-group">
+                                    <label>Nombre de Categoría</label>
+                                    <input type="text" id="cat-nombre" name="cat_nombre" placeholder="Ej: Programación PHP" required>
+                                </div>
+                                <button type="submit" class="btn btn-success full-width">Crear Categoría</button>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <h3>📁 Categorías Existentes</h3>
+                            <ul class="cat-list" id="listaCategoriasUI"></ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="view-quiz-gestion" class="view-section">
+                    <div class="card full-width-card">
+                        <h3>➕ Crear Nuevo Quiz con Preguntas</h3>
+                        <form id="form-quiz">
+                            <div class="grid-form">
+                                <div class="form-group full-width">
+                                    <label>Título del Quiz</label>
+                                    <input type="text" id="quiz-nombre" name="quiz_nombre" placeholder="Ej: Parcial de Base de Datos" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Categoría</label>
+                                    <select id="quiz-categoria" name="quiz_categoria" class="select-dinamico-cat" required></select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Dificultad</label>
+                                    <select id="quiz-nivel" name="quiz_nivel">
+                                        <option value="Fácil">Fácil</option>
+                                        <option value="Medio">Medio</option>
+                                        <option value="Difícil">Difícil</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Número de Preguntas</label>
+                                    <input type="number" id="numPreguntasInput" name="num_preguntas" min="1" max="20" value="3">
+                                </div>
+                                <div class="form-group">
+                                    <label>Tiempo por Pregunta (segundos)</label>
+                                    <input type="number" id="quiz-tiempo" name="quiz_tiempo" min="5" max="180" value="30" required>
+                                </div>
+
+                                <div class="preguntas-box full-width">
+                                    <div class="preguntas-nav">
+                                        <button type="button" class="btn-nav" id="btnPrevPregunta">&lt; Anterior</button>
+                                        <span class="preg-indicator">Pregunta: <strong id="lblNumPregunta">1</strong></span>
+                                        <button type="button" class="btn-nav" id="btnNextPregunta">Siguiente &gt;</button>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <input type="text" id="txtPregunta" name="txtPregunta" placeholder="Enunciado de la pregunta...">
+                                    </div>
+                                    <div class="answers-grid">
+                                        <input type="text" id="respA" name="respA" placeholder="Opción A">
+                                        <input type="text" id="respB" name="respB" placeholder="Opción B">
+                                        <input type="text" id="respC" name="respC" placeholder="Opción C">
+                                        <input type="text" id="respD" name="respD" placeholder="Opción D">
+                                    </div>
+                                    <div class="form-group" style="margin-top:10px;">
+                                        <label>Opción Correcta:</label>
+                                        <select id="respCorrecta" name="respCorrecta">
+                                            <option value="A">Opción A</option>
+                                            <option value="B">Opción B</option>
+                                            <option value="C">Opción C</option>
+                                            <option value="D">Opción D</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success full-width" style="margin-top: 20px;">🚀 Guardar Quiz Completo en Servidor</button>
+                        </form>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-editar-item" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>✏️ Editar Accesorio</h3>
+                <button type="button" class="btn-close modal-close-btn" data-modal="modal-editar-item">&times;</button>
+            </div>
+            <form id="form-editar-item">
+                <input type="hidden" id="edit-i-id" name="edit_i_id">
+                <div class="form-group">
+                    <label>Nombre del Ítem</label>
+                    <input type="text" id="edit-i-nombre" name="edit_i_nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select id="edit-i-categoria" name="edit_i_categoria">
+                        <option value="Cabeza">Cabeza</option>
+                        <option value="Rostro">Rostro</option>
+                        <option value="Cuerpo">Cuerpo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Precio ($)</label>
+                    <input type="number" id="edit-i-precio" name="edit_i_precio" min="0" required>
+                </div>
+                <button type="submit" class="btn btn-primary full-width" style="margin-top:15px;">💾 Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-editar-quiz" class="modal-overlay">
+        <div class="modal-card modal-large">
+            <div class="modal-header">
+                <h3>✏️ Modificar Quiz Creado</h3>
+                <button type="button" class="btn-close modal-close-btn" data-modal="modal-editar-quiz">&times;</button>
+            </div>
+            <form id="form-editar-quiz">
+                <input type="hidden" id="edit-q-id" name="edit_q_id">
+                <div class="grid-form">
+                    <div class="form-group full-width">
+                        <label>Título del Quiz</label>
+                        <input type="text" id="edit-q-nombre" name="edit_q_nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="edit-q-categoria" name="edit_q_categoria" class="select-dinamico-cat" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Dificultad</label>
+                        <select id="edit-q-nivel" name="edit_q_nivel">
+                            <option value="Fácil">Fácil</option>
+                            <option value="Medio">Medio</option>
+                            <option value="Difícil">Difícil</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Tiempo por Pregunta (segundos)</label>
+                        <input type="number" id="edit-q-tiempo" name="edit_q_tiempo" min="5" max="180" required>
+                    </div>
+
+                    <div class="preguntas-box full-width">
+                        <div class="preguntas-nav">
+                            <button type="button" class="btn-nav" id="btnPrevPreguntaEdit">&lt; Anterior</button>
+                            <span class="preg-indicator">Pregunta Editando: <strong id="lblNumPreguntaEdit">1</strong></span>
+                            <button type="button" class="btn-nav" id="btnNextPreguntaEdit">Siguiente &gt;</button>
+                        </div>
+
+                        <div class="form-group">
+                            <input type="text" id="editTxtPregunta" name="editTxtPregunta" placeholder="Enunciado de la pregunta...">
+                        </div>
+                        <div class="answers-grid">
+                            <input type="text" id="editRespA" name="editRespA" placeholder="Opción A">
+                            <input type="text" id="editRespB" name="editRespB" placeholder="Opción B">
+                            <input type="text" id="editRespC" name="editRespC" placeholder="Opción C">
+                            <input type="text" id="editRespD" name="editRespD" placeholder="Opción D">
+                        </div>
+                        <div class="form-group" style="margin-top:10px;">
+                            <label>Opción Correcta:</label>
+                            <select id="editRespCorrecta" name="editRespCorrecta">
+                                <option value="A">Opción A</option>
+                                <option value="B">Opción B</option>
+                                <option value="C">Opción C</option>
+                                <option value="D">Opción D</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success full-width" style="margin-top: 15px;">💾 Actualizar Quiz Completo</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
