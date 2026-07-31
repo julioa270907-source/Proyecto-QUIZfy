@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,77 @@
     <link rel="stylesheet" href="app.css">
 </head>
 <body>
-    
+
+    <main id="app-container">
+
+        <section id="vista-auth" class="auth-wrapper">
+            <div class="auth-card">
+                
+                <div class="auth-tabs">
+                    <button id="btn-tab-login" class="tab-btn active" onclick="mostrarTabAuth('login')">Iniciar Sesión</button>
+                    <button id="btn-tab-registro" class="tab-btn" onclick="mostrarTabAuth('registro')">Registrarse</button>
+                </div>
+
+                <form id="form-login" class="auth-form" onsubmit="iniciarSesion(event)">
+                    <h2>¡Bienvenido a QUIZfy! 🎯</h2>
+                    <p class="auth-subtitle">Ingresa para jugar y personalizar tu avatar</p>
+
+                    <div class="input-group">
+                        <label for="login-usuario">Usuario o Correo</label>
+                        <input type="text" id="login-usuario" required placeholder="Ej. juan123 o juan@gmail.com">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="login-password">Contraseña</label>
+                        <input type="password" id="login-password" required placeholder="••••••••">
+                    </div>
+
+                    <button type="submit" class="btn-primary">Entrar a Jugar</button>
+                </form>
+
+                <form id="form-registro" class="auth-form d-none" onsubmit="registrarUsuario(event)">
+                    <h2>Crear Cuenta 🚀</h2>
+                    <p class="auth-subtitle">¡Recibe 🪙 100 monedas de regalo al registrarte!</p>
+
+                    <div class="input-group">
+                        <label for="reg-usuario">Nombre de Usuario</label>
+                        <input type="text" id="reg-usuario" required placeholder="Ej. GamerPro">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="reg-correo">Correo Electrónico</label>
+                        <input type="email" id="reg-correo" required placeholder="tu@correo.com">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="reg-password">Contraseña</label>
+                        <input type="password" id="reg-password" required placeholder="Mínimo 6 caracteres">
+                    </div>
+
+                    <button type="submit" class="btn-primary">Registrarme</button>
+                </form>
+
+            </div>
+        </section>
+
+        <section id="vista-dashboard" class="dashboard-wrapper d-none">
+            <header class="user-header">
+                <div class="user-info">
+                    <h2>Hola, <span id="lbl-nombre-usuario">Jugador</span> 👋</h2>
+                </div>
+                <div class="user-stats">
+                    <span class="badge-monedas">🪙 <strong id="lbl-monedas">0</strong></span>
+                    <button onclick="cerrarSesion()" class="btn-danger">Cerrar Sesión</button>
+                </div>
+            </header>
+            
+            <div class="dashboard-content">
+                <h3>Elige un Cuestionario para empezar</h3>
+                </div>
+        </section>
+
+    </main>
+
     <script src="app.js"></script>
 </body>
 </html>

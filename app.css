@@ -24,4 +24,177 @@ body {
     color: var(--text-main);
     height: 100vh;
     overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.d-none {
+    display: none !important;
+}
+
+/* =========================================================
+   1. VISTA AUTHENTICATION (LOGIN Y REGISTRO)
+   ========================================================= */
+.auth-wrapper {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+}
+
+.auth-card {
+    background-color: var(--bg-card);
+    border-radius: 16px;
+    padding: 30px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.auth-tabs {
+    display: flex;
+    background-color: var(--bg-sidebar);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 25px;
+    border: 1px solid var(--border-color);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, var(--accent-purple), var(--secondary-neon));
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+}
+
+.auth-form h2 {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+    color: var(--text-main);
+}
+
+.auth-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+.input-group {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+}
+
+.input-group input {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-sidebar);
+    color: var(--text-main);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-group input:focus {
+    border-color: var(--primary-neon);
+    box-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--secondary-neon), var(--primary-neon));
+    color: #000;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.15);
+    transform: translateY(-2px);
+}
+
+/* =========================================================
+   2. VISTA DASHBOARD (MENÚ DEL JUGADOR)
+   ========================================================= */
+.dashboard-wrapper {
+    width: 100%;
+    max-width: 900px;
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bg-card);
+    padding: 18px 25px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.user-stats {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.badge-monedas {
+    background-color: var(--bg-sidebar);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--primary-neon);
+    color: var(--primary-neon);
+    font-size: 0.95rem;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+}
+
+.btn-danger {
+    padding: 8px 16px;
+    border: none;
+    background-color: var(--accent-red);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: filter 0.2s ease;
+}
+
+.btn-danger:hover {
+    filter: brightness(1.2);
+}
+
+.dashboard-content {
+    margin-top: 25px;
+    background-color: var(--bg-card);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    flex: 1;
 }
