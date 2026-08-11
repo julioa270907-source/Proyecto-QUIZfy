@@ -179,6 +179,7 @@ function mostrarVista(vista) {
 
 function renderizarUsuario(usuario) {
     document.getElementById('lbl-nombre-usuario').innerText = usuario.nombre_usuario;
+    document.getElementById('btn-nombre-usuario').innerText = usuario.nombre_usuario;
     document.getElementById('lbl-monedas').innerText = usuario.monedas;
     mostrarVista('dashboard');
 }

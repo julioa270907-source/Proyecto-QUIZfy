@@ -137,64 +137,188 @@ body {
 }
 
 /* =========================================================
-   2. VISTA DASHBOARD (MENÚ DEL JUGADOR)
+   2. VISTA DASHBOARD (LOBBY A PANTALLA COMPLETA)
    ========================================================= */
 .dashboard-wrapper {
-    width: 100%;
-    max-width: 900px;
-    padding: 20px;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    background-color: transparent; /* Hereda el fondo general de la app */
+    padding: 30px 40px;
+    position: relative;
     display: flex;
     flex-direction: column;
 }
 
-.user-header {
+/* --- CABECERA Y BOTONES LATERALES --- */
+.lobby-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    background-color: var(--bg-card);
-    padding: 18px 25px;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
+    align-items: flex-start;
+    width: 100%;
 }
 
-.user-stats {
+.lobby-left {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 15px;
 }
 
-.badge-monedas {
-    background-color: var(--bg-sidebar);
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid var(--primary-neon);
-    color: var(--primary-neon);
-    font-size: 0.95rem;
-    font-weight: bold;
-    box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
-}
-
-.btn-danger {
-    padding: 8px 16px;
-    border: none;
-    background-color: var(--accent-red);
-    color: white;
-    border-radius: 6px;
+.btn-lobby-outline {
+    background: rgba(21, 26, 36, 0.7); /* Fondo semi-transparente estilo vidrio */
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    font-weight: bold;
-    transition: filter 0.2s ease;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
 }
 
-.btn-danger:hover {
+.btn-lobby-outline:hover {
+    border-color: var(--primary-neon);
+    color: var(--primary-neon);
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.2) inset;
+}
+
+.btn-tienda:hover {
+    border-color: var(--accent-purple);
+    color: #e0aaff;
+    box-shadow: 0 0 10px rgba(121, 40, 202, 0.3) inset;
+}
+
+.btn-logout:hover {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2) inset;
+}
+
+/* --- MENSAJE CENTRAL --- */
+.mensaje-sistema {
+    background-color: rgba(16, 20, 29, 0.8);
+    border: 1px solid var(--border-color);
+    padding: 12px 30px;
+    border-radius: 30px;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+}
+
+.mensaje-sistema strong {
+    color: #ffd700;
+}
+
+/* --- ESCENARIO CENTRAL (AVATAR) --- */
+.lobby-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.avatar-display {
+    width: 300px;
+    height: 300px;
+    border: 2px solid var(--border-color);
+    border-radius: 20px;
+    background-color: var(--bg-card);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5) inset;
+    transition: border-color 0.3s ease;
+}
+
+.avatar-display:hover {
+    border-color: var(--secondary-neon);
+}
+
+.player-name {
+    font-size: 1.8rem;
+    color: var(--text-main);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+/* --- BOTÓN JUGAR (ESQUINA INFERIOR) --- */
+.lobby-bottom-right {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+}
+
+.btn-jugar-gigante {
+    background: linear-gradient(135deg, var(--secondary-neon), var(--primary-neon));
+    color: #000;
+    border: none;
+    padding: 18px 35px;
+    border-radius: 15px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0, 242, 254, 0.4);
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.btn-jugar-gigante:hover {
+    transform: scale(1.05) translateY(-5px);
     filter: brightness(1.2);
 }
 
-.dashboard-content {
-    margin-top: 25px;
-    background-color: var(--bg-card);
-    padding: 25px;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    flex: 1;
+/* =========================================================
+   DISEÑO RESPONSIVE (Móviles y Tablets pequeñas)
+   ========================================================= */
+@media (max-width: 768px) {
+    .dashboard-wrapper {
+        padding: 20px;
+        overflow-y: auto; /* Permite scroll si la pantalla es muy pequeña */
+    }
+
+    .lobby-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .lobby-left {
+        flex-direction: row;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .lobby-right {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+    }
+
+    /* Ocultamos el texto del botón logout en móvil para ahorrar espacio */
+    .btn-logout {
+        font-size: 0;
+        padding: 10px;
+    }
+    .btn-logout::before {
+        content: '⏻';
+        font-size: 1.2rem;
+    }
+
+    .avatar-display {
+        width: 250px;
+        height: 250px;
+    }
+
+    .lobby-bottom-right {
+        position: relative; /* Quita el botón de la esquina */
+        bottom: auto;
+        right: auto;
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+    }
 }

@@ -62,19 +62,44 @@
         </section>
 
         <section id="vista-dashboard" class="dashboard-wrapper d-none">
-            <header class="user-header">
-                <div class="user-info">
-                    <h2>Hola, <span id="lbl-nombre-usuario">Jugador</span> 👋</h2>
+            
+            <header class="lobby-header">
+                
+                <div class="lobby-left">
+                    <button class="btn-lobby-outline" onclick="abrirPerfil()">
+                        👤 <span id="btn-nombre-usuario">Perfil</span>
+                    </button>
+                    <button class="btn-lobby-outline btn-tienda" onclick="abrirTienda()">
+                        💎 Tienda
+                    </button>
                 </div>
-                <div class="user-stats">
-                    <span class="badge-monedas">🪙 <strong id="lbl-monedas">0</strong></span>
-                    <button onclick="cerrarSesion()" class="btn-danger">Cerrar Sesión</button>
+
+                <div class="lobby-center">
+                    <div class="mensaje-sistema">
+                        <p id="lbl-mensaje-aleatorio">¡Bienvenido! Tienes 🪙 <strong id="lbl-monedas">0</strong> monedas.</p>
+                    </div>
+                </div>
+
+                <div class="lobby-right">
+                    <button onclick="cerrarSesion()" class="btn-lobby-outline btn-logout">
+                        ⏻ Sign out
+                    </button>
                 </div>
             </header>
-            
-            <div class="dashboard-content">
-                <h3>Elige un Cuestionario para empezar</h3>
+
+            <div class="lobby-stage">
+                <div class="avatar-display">
+                    <span>AVATAR</span>
                 </div>
+                <h2 id="lbl-nombre-usuario" class="player-name">Jugador</h2>
+            </div>
+
+            <div class="lobby-bottom-right">
+                <button class="btn-jugar-gigante" onclick="abrirSeleccionQuiz()">
+                    ¡Empezar a Jugar! 🚀
+                </button>
+            </div>
+
         </section>
 
     </main>
