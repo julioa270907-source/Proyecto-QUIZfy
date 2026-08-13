@@ -183,3 +183,50 @@ function renderizarUsuario(usuario) {
     document.getElementById('lbl-monedas').innerText = usuario.monedas;
     mostrarVista('dashboard');
 }
+
+// Cargar el Avatar del Jugador en el Lobby o Vestidor
+async function cargarAvatarUsuario() {
+    try {
+        const response = await fetch('api/api_avatar.php?accion=obtener_avatar');
+        const res = await response.json();
+
+        if (res.status === 'success' && res.avatar) {
+            renderizarAvatarHTML(res.avatar);
+        }
+    } catch (error) {
+        console.error('Error al cargar el avatar:', error);
+    }
+}
+
+// Renderiza las capas visuales (Personaje + Accesorios con offsets)
+function renderizarAvatarHTML(avatar) {
+    const contenedor = document.querySelector('.avatar-display');
+    contenedor.style.position = 'relative';
+    contenedor.innerHTML = ''; // Limpiar el texto "AVATAR"
+
+    // 1. Capa Base: Personaje
+    const imgBase = document.createElement('img');
+    imgBase.src = avatar.ruta_imagen;
+    imgBase.alt = avatar.personaje_nombre;
+    imgBase.style.width = '100%';
+    imgBase.style.height = '100%';
+    imgBase.style.objectFit = 'contain';
+    imgBase.style.position = 'absolute';
+    imgBase.style.zIndex = '1';
+    contenedor.appendChild(imgBase);
+
+    // 2. Capas de Accesorios Equipados
+    avatar.items_equipados.forEach((item, index) => {
+        const imgItem = document.createElement('img');
+        imgItem.src = item.ruta_svg;
+        imgItem.alt = item.item_nombre;
+        imgItem.style.position = 'absolute';
+        imgItem.style.width = `${item.width}px`;
+        imgItem.style.left = `${item.pos_x}px`;
+        imgItem.style.top = `${item.pos_y}px`;
+        imgItem.style.transform = `rotate(${item.rotacion}deg)`;
+        imgItem.style.zIndex = (index + 2).toString(); // Quedan por encima del personaje base
+        
+        contenedor.appendChild(imgItem);
+    });
+}

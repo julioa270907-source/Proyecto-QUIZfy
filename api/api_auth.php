@@ -25,31 +25,45 @@ switch($accion) {
                 throw new Exception("Todos los campos son obligatorios.");
             }
 
-            // Validar si usuario o correo ya existen
+            // Validar existencia previa
             $checkStmt = $conexion->prepare("SELECT id FROM usuarios WHERE nombre_usuario = :u OR correo = :c");
             $checkStmt->execute([':u' => $usuario, ':c' => $correo]);
             if ($checkStmt->fetch()) {
                 throw new Exception("El nombre de usuario o correo ya está registrado.");
             }
 
-            // Encriptar contraseña de forma segura
             $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
             $conexion->beginTransaction();
 
-            // Insertar usuario (Inicia con 100 monedas de regalo)
-            $stmt = $conexion->prepare("INSERT INTO usuarios (nombre_usuario, correo, contrasena, monedas) VALUES (:u, :c, :p, 100) RETURNING id");
-            $stmt->execute([':u' => $usuario, ':c' => $correo, ':p' => $passwordHash]);
+            // 1. Obtener el ID del personaje base por defecto (el primero creado)
+            $stmtChar = $conexion->query("SELECT id FROM personajes ORDER BY id ASC LIMIT 1");
+            $personajeBase = $stmtChar->fetch(PDO::FETCH_ASSOC);
+            $personajeIdDefecto = $personajeBase ? $personajeBase['id'] : null;
+
+            // 2. Insertar usuario asignando su personaje_actual_id
+            $stmt = $conexion->prepare("
+                INSERT INTO usuarios (nombre_usuario, correo, contrasena, monedas, personaje_actual_id) 
+                VALUES (:u, :c, :p, 100, :pid) 
+                RETURNING id
+            ");
+            $stmt->execute([
+                ':u'   => $usuario, 
+                ':c'   => $correo, 
+                ':p'   => $passwordHash,
+                ':pid' => $personajeIdDefecto
+            ]);
+            
             $nuevoUsuario = $stmt->fetch(PDO::FETCH_ASSOC);
             $usuarioId = $nuevoUsuario['id'];
 
-            // Crear registro inicial de estadísticas
+            // 3. Crear estadísticas iniciales
             $stmtEst = $conexion->prepare("INSERT INTO usuario_estadisticas (usuario_id) VALUES (:id)");
             $stmtEst->execute([':id' => $usuarioId]);
 
             $conexion->commit();
 
-            echo json_encode(["status" => "success", "mensaje" => "¡Registro exitoso! Ya puedes iniciar sesión."]);
+            echo json_encode(["status" => "success", "mensaje" => "¡Registro exitoso! Te hemos regalado 🪙 100 monedas."]);
         } catch (Exception $e) {
             if ($conexion->inTransaction()) $conexion->rollBack();
             echo json_encode(["status" => "error", "mensaje" => $e->getMessage()]);
