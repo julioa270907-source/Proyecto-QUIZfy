@@ -142,6 +142,7 @@ async function verificarSesion() {
     } catch (error) {
         console.error('Error al verificar sesión:', error);
     }
+    cargarAvatarPorDefecto();
 }
 
 // ----------------------------------------------------
@@ -229,4 +230,30 @@ function renderizarAvatarHTML(avatar) {
         
         contenedor.appendChild(imgItem);
     });
+}
+
+// ----------------------------------------------------
+// FUNCIÓN: Cargar Avatar por Defecto del Usuario
+// ----------------------------------------------------
+async function cargarAvatarPorDefecto() {
+    try {
+        const response = await fetch('api/api_avatar.php?accion=obtener_avatar');
+        const res = await response.json();
+
+        if (res.status === 'success' && res.avatar) {
+            // Renderizar usando la función auxiliar que ya tienes
+            renderizarAvatarHTML(res.avatar);
+        } else {
+            // Si no hay avatar asignado, mostrar uno por defecto
+            const contenedor = document.querySelector('.avatar-display');
+            contenedor.style.position = 'relative';
+            contenedor.innerHTML = `
+                <img src="img/avatars/default.svg" 
+                     alt="Avatar por defecto" 
+                     style="width:100%; height:100%; object-fit:contain; position:absolute; z-index:1;">
+            `;
+        }
+    } catch (error) {
+        console.error('Error al cargar avatar por defecto:', error);
+    }
 }
