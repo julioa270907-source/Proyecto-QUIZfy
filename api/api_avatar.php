@@ -8,13 +8,19 @@ require_once 'conexion.php';
 
 $db = new Conexion();
 $conexion = $db->conectar();
-$accion = $_REQUEST['accion'] ?? '';
 
-// Verificar sesión
-$usuario_id = $_SESSION['usuario_id'] ?? ($_REQUEST['usuario_id'] ?? null);
+// Soporte para lectura de JSON (HTTPie / Fetch API)
+$body = json_decode(file_get_contents('php://input'), true) ?? [];
+$data = array_merge($_REQUEST, $_POST, $body);
+
+$accion = $data['accion'] ?? '';
+
+// CONTROL DE AUTENTICACIÓN ESTRICTO SEGÚN LA GUÍA (401 Unauthorized)
+$usuario_id = $_SESSION['usuario_id'] ?? ($data['usuario_id'] ?? null);
 
 if (!$usuario_id) {
-    echo json_encode(["status" => "error", "mensaje" => "No hay sesión activa."]);
+    http_response_code(401); // Unauthorized
+    echo json_encode(["status" => "error", "mensaje" => "No hay sesión activa. Acceso denegado."]);
     exit;
 }
 
@@ -25,7 +31,7 @@ switch($accion) {
     // ----------------------------------------------------
     case 'obtener_avatar':
         try {
-            // 1. Consulta del personaje base activo del usuario
+            // Consulta del personaje base activo del usuario
             $stmtUser = $conexion->prepare("
                 SELECT u.id AS usuario_id, p.id AS personaje_id, p.nombre AS personaje_nombre, p.ruta_imagen
                 FROM usuarios u
@@ -36,6 +42,7 @@ switch($accion) {
             $avatarData = $stmtUser->fetch(PDO::FETCH_ASSOC);
 
             if (!$avatarData || !$avatarData['personaje_id']) {
+                http_response_code(200); // 200 OK, pero avisamos que no hay personaje
                 echo json_encode([
                     "status" => "warning", 
                     "mensaje" => "El usuario no tiene un personaje seleccionado.",
@@ -46,7 +53,7 @@ switch($accion) {
 
             $personajeId = $avatarData['personaje_id'];
 
-            // 2. Consulta de los ítems que tiene EQUIPADOS con sus offsets de posición
+            // Consulta de los ítems EQUIPADOS con sus offsets
             $stmtItems = $conexion->prepare("
                 SELECT 
                     i.id AS item_id, 
@@ -66,7 +73,7 @@ switch($accion) {
             $stmtItems->execute([':uid' => $usuario_id, ':pid' => $personajeId]);
             $itemsEquipados = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
 
-            // Respuesta estructurada para el Frontend
+            http_response_code(200); // OK
             echo json_encode([
                 "status" => "success",
                 "avatar" => [
@@ -78,6 +85,7 @@ switch($accion) {
             ]);
 
         } catch (Exception $e) {
+            http_response_code(500); // Internal Server Error
             echo json_encode(["status" => "error", "mensaje" => $e->getMessage()]);
         }
         break;
@@ -87,22 +95,26 @@ switch($accion) {
     // ----------------------------------------------------
     case 'cambiar_personaje':
         try {
-            $personaje_id = $_POST['personaje_id'] ?? null;
+            $personaje_id = $data['personaje_id'] ?? null;
 
             if (!$personaje_id) {
+                http_response_code(400); // Bad Request
                 throw new Exception("ID de personaje no especificado.");
             }
 
             $stmt = $conexion->prepare("UPDATE usuarios SET personaje_actual_id = :pid WHERE id = :uid");
             $stmt->execute([':pid' => $personaje_id, ':uid' => $usuario_id]);
 
+            http_response_code(200); // OK
             echo json_encode(["status" => "success", "mensaje" => "Personaje actualizado con éxito."]);
         } catch (Exception $e) {
+            http_response_code(500);
             echo json_encode(["status" => "error", "mensaje" => $e->getMessage()]);
         }
         break;
 
     default:
+        http_response_code(400); // Bad Request
         echo json_encode(["status" => "error", "mensaje" => "Acción no válida."]);
         break;
 }

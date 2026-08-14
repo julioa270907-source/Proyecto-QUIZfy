@@ -4,45 +4,68 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
 require_once 'conexion.php';
+
 $db = new Conexion();
 $conexion = $db->conectar();
-$accion = $_REQUEST['accion'] ?? '';
+
+// 💡 Lectura unificada: Soporta JSON nativo y FormData
+$body = json_decode(file_get_contents('php://input'), true) ?? [];
+$data = array_merge($_REQUEST, $_POST, $body);
+
+$accion = $data['accion'] ?? '';
 
 switch($accion) {
     
-    // Traer la configuración exacta cuando selecciones un PJ y un Ítem en los <select>
+    // ----------------------------------------------------
+    // 1. OBTENER CONFIGURACIÓN ESPECÍFICA (PJ + ÍTEM)
+    // ----------------------------------------------------
     case 'leer_especifico':
         try {
-            $personaje_id = $_POST['personaje_id'] ?? null;
-            $item_id = $_POST['item_id'] ?? null;
+            $personaje_id = $data['personaje_id'] ?? null;
+            $item_id      = $data['item_id'] ?? null;
+
+            if (!$personaje_id || !$item_id) {
+                http_response_code(400); // Bad Request
+                echo json_encode(["status" => "error", "mensaje" => "Se requiere personaje_id e item_id."]);
+                exit;
+            }
 
             $query = "SELECT * FROM personaje_item_offset WHERE personaje_id = :p_id AND item_id = :i_id";
             $stmt = $conexion->prepare($query);
             $stmt->execute([':p_id' => $personaje_id, ':i_id' => $item_id]);
-            $data = $stmt->fetch();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if($data) {
-                echo json_encode(["status" => "success", "existe" => true, "data" => $data]);
+            http_response_code(200); // OK
+            if ($result) {
+                echo json_encode(["status" => "success", "existe" => true, "data" => $result]);
             } else {
-                // Si no hay configuración previa, mandamos que no existe para usar valores por defecto en JS
                 echo json_encode(["status" => "success", "existe" => false]);
             }
         } catch(Exception $e) {
+            http_response_code(500);
             echo json_encode(["status" => "error", "mensaje" => $e->getMessage()]);
         }
         break;
 
-    // Guardar (Insertar si es nuevo, o Actualizar si ya existía)
+    // ----------------------------------------------------
+    // 2. GUARDAR O ACTUALIZAR OFFSET (UPSERT EN POSTGRESQL)
+    // ----------------------------------------------------
     case 'guardar':
         try {
-            $personaje_id = $_POST['personaje_id'] ?? null;
-            $item_id = $_POST['item_id'] ?? null;
-            $width = $_POST['width'] ?? 100;
-            $pos_x = $_POST['pos_x'] ?? 0;
-            $pos_y = $_POST['pos_y'] ?? 0;
-            $rotacion = $_POST['rotacion'] ?? 0;
+            $personaje_id = $data['personaje_id'] ?? null;
+            $item_id      = $data['item_id'] ?? null;
+            $width        = $data['width'] ?? 100;
+            $pos_x        = $data['pos_x'] ?? 0;
+            $pos_y        = $data['pos_y'] ?? 0;
+            $rotacion     = $data['rotacion'] ?? 0;
 
-            // En PostgreSQL, la llave primaria compuesta dispara el "ON CONFLICT"
+            if (!$personaje_id || !$item_id) {
+                http_response_code(400);
+                echo json_encode(["status" => "error", "mensaje" => "Debe especificar el personaje y el ítem para guardar los offsets."]);
+                exit;
+            }
+
+            // Cláusula ON CONFLICT aprovechando la llave primaria compuesta en PostgreSQL
             $query = "INSERT INTO personaje_item_offset (personaje_id, item_id, width, pos_x, pos_y, rotacion) 
                       VALUES (:p_id, :i_id, :w, :x, :y, :r) 
                       ON CONFLICT (personaje_id, item_id) 
@@ -57,16 +80,23 @@ switch($accion) {
             $stmt->execute([
                 ':p_id' => $personaje_id, 
                 ':i_id' => $item_id, 
-                ':w' => $width, 
-                ':x' => $pos_x, 
-                ':y' => $pos_y, 
-                ':r' => $rotacion
+                ':w'    => $width, 
+                ':x'    => $pos_x, 
+                ':y'    => $pos_y, 
+                ':r'    => $rotacion
             ]);
 
-            echo json_encode(["status" => "success", "mensaje" => "Posición guardada con precisión milimétrica."]);
+            http_response_code(200); // OK
+            echo json_encode(["status" => "success", "mensaje" => "Ajustes de posición guardados correctamente."]);
         } catch(Exception $e) {
-            echo json_encode(["status" => "error", "mensaje" => $e->getMessage()]);
+            http_response_code(500);
+            echo json_encode(["status" => "error", "mensaje" => "Error BD: " . $e->getMessage()]);
         }
+        break;
+
+    default:
+        http_response_code(400);
+        echo json_encode(["status" => "error", "mensaje" => "Acción no válida o no especificada."]);
         break;
 }
 ?>
