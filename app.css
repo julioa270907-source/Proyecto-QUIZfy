@@ -1,14 +1,17 @@
 :root {
-    --bg-dark: #0b0c10;
-    --bg-card: #151a24;
-    --bg-sidebar: #10141d;
-    --border-color: #222b3c;
+    --bg-dark: #07090e;
+    --bg-card: rgba(16, 22, 34, 0.85);
+    --bg-sidebar: #0b0f19;
+    --border-color: #1e293b;
+    --border-glow: rgba(0, 242, 254, 0.4);
     --primary-neon: #00f2fe;
     --secondary-neon: #4facfe;
-    --accent-purple: #7928ca;
+    --accent-purple: #9d4edd;
+    --accent-purple-glow: rgba(157, 78, 221, 0.5);
     --accent-green: #10b981;
-    --accent-red: #ef4444;
-    --text-main: #f1f5f9;
+    --accent-red: #ff4d6d;
+    --accent-red-glow: rgba(255, 77, 109, 0.4);
+    --text-main: #f8fafc;
     --text-muted: #94a3b8;
 }
 
@@ -21,9 +24,24 @@
 
 body {
     background-color: var(--bg-dark);
+    /* Fondo con malla cyberpunk y destellos sutiles */
+    background-image: 
+        radial-gradient(circle at 50% 30%, rgba(0, 242, 254, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(121, 40, 202, 0.08) 0%, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
     color: var(--text-main);
     height: 100vh;
     overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#app-container {
+    width: 100%;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -38,287 +56,552 @@ body {
    ========================================================= */
 .auth-wrapper {
     width: 100%;
-    max-width: 420px;
-    padding: 20px;
+    max-width: 460px;
+    padding: 24px;
 }
 
 .auth-card {
-    background-color: var(--bg-card);
-    border-radius: 16px;
-    padding: 30px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    background: var(--bg-card);
+    border-radius: 0px;
+    padding: 40px 36px;
+    border: 2px solid rgba(0, 242, 254, 0.25);
+    box-shadow: 0 0 35px rgba(0, 0, 0, 0.8), 
+                0 0 15px rgba(0, 242, 254, 0.15);
+    backdrop-filter: blur(16px);
 }
 
 .auth-tabs {
     display: flex;
     background-color: var(--bg-sidebar);
-    border-radius: 10px;
-    padding: 4px;
-    margin-bottom: 25px;
+    border-radius: 0px;
+    padding: 6px;
+    margin-bottom: 30px;
     border: 1px solid var(--border-color);
 }
 
 .tab-btn {
     flex: 1;
-    padding: 10px;
+    padding: 12px 16px;
     border: none;
     background: transparent;
     color: var(--text-muted);
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+    border-radius: 0px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
 }
 
 .tab-btn.active {
-    background: linear-gradient(135deg, var(--accent-purple), var(--secondary-neon));
-    color: #ffffff;
-    box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+    background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+    color: #000;
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
 }
 
 .auth-form h2 {
-    font-size: 1.5rem;
-    margin-bottom: 5px;
+    font-size: 1.65rem;
+    margin-bottom: 8px;
     color: var(--text-main);
+    letter-spacing: 0.5px;
 }
 
 .auth-subtitle {
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     color: var(--text-muted);
-    margin-bottom: 20px;
+    margin-bottom: 28px;
+    line-height: 1.4;
 }
 
 .input-group {
-    margin-bottom: 18px;
+    margin-bottom: 22px;
     display: flex;
     flex-direction: column;
 }
 
 .input-group label {
-    font-size: 0.85rem;
-    margin-bottom: 6px;
+    font-size: 0.88rem;
+    margin-bottom: 9px;
     color: var(--text-muted);
+    font-weight: 600;
 }
 
 .input-group input {
-    padding: 12px;
-    border-radius: 8px;
+    padding: 14px 16px;
+    border-radius: 0px;
     border: 1px solid var(--border-color);
-    background-color: var(--bg-sidebar);
+    background-color: rgba(11, 15, 25, 0.8);
     color: var(--text-main);
     font-size: 0.95rem;
     outline: none;
-    transition: border 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .input-group input:focus {
     border-color: var(--primary-neon);
-    box-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
+    box-shadow: 0 0 12px rgba(0, 242, 254, 0.35);
+    background-color: rgba(16, 22, 34, 0.95);
 }
 
 .btn-primary {
     width: 100%;
-    padding: 12px;
+    padding: 15px;
     border: none;
-    border-radius: 8px;
+    border-radius: 0px;
     background: linear-gradient(135deg, var(--secondary-neon), var(--primary-neon));
     color: #000;
-    font-size: 1rem;
-    font-weight: bold;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
     cursor: pointer;
-    transition: transform 0.2s ease, filter 0.2s ease;
-    margin-top: 10px;
+    transition: all 0.3s ease;
+    margin-top: 14px;
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
 }
 
 .btn-primary:hover {
-    filter: brightness(1.15);
+    filter: brightness(1.2);
     transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.6);
 }
 
 /* =========================================================
-   2. VISTA DASHBOARD (LOBBY A PANTALLA COMPLETA)
+   2. VISTA DASHBOARD (LOBBY)
    ========================================================= */
 .dashboard-wrapper {
     width: 100vw;
     height: 100vh;
-    background-color: transparent; /* Hereda el fondo general de la app */
     padding: 30px 40px;
     position: relative;
     display: flex;
     flex-direction: column;
 }
 
-/* --- CABECERA Y BOTONES LATERALES --- */
+/* --- CABECERA Y NAVEGACIÓN --- */
 .lobby-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     width: 100%;
+    z-index: 10;
+    position: relative;
+    height: 0;
 }
 
+/* COLUMNA IZQUIERDA */
 .lobby-left {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 80px;
+    width: 320px;
+    margin-top: 20px;
+    z-index: 20;
 }
 
+/* GRUPO DE BOTONES SUPERIORES (Usuario + Tienda) */
+.lobby-left-top {
+    display: flex;
+    flex-direction: column;
+    gap: 80px; /* AUMENTADO: Mucha más separación entre Usuario y Tienda */
+}
+
+/* BOTÓN BASE: 100% CUADRADO */
 .btn-lobby-outline {
-    background: rgba(21, 26, 36, 0.7); /* Fondo semi-transparente estilo vidrio */
+    background: rgba(16, 22, 34, 0.9);
     color: var(--text-main);
-    border: 1px solid var(--border-color);
-    padding: 10px 20px;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 600;
+    border: 2px solid var(--primary-neon);
+    padding: 22px 28px;
+    border-radius: 0 !important;
+    font-size: 1.3rem;
+    font-weight: 800;
     cursor: pointer;
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 18px rgba(0, 242, 254, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    width: 100%;
+}
+
+/* BOTÓN NOMBRE USUARIO */
+.btn-lobby-outline:not(.btn-tienda) {
+    border-color: var(--primary-neon);
+    color: #ffffff;
+}
+
+.btn-lobby-outline:not(.btn-tienda)::before {
+    content: '';
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    margin-right: 18px;
+    background-color: var(--primary-neon);
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'></path><circle cx='12' cy='7' r='4'></circle></svg>") no-repeat center / contain;
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'></path><circle cx='12' cy='7' r='4'></circle></svg>") no-repeat center / contain;
+    transition: all 0.3s ease;
 }
 
 .btn-lobby-outline:hover {
-    border-color: var(--primary-neon);
-    color: var(--primary-neon);
-    box-shadow: 0 0 10px rgba(0, 242, 254, 0.2) inset;
+    background: rgba(0, 242, 254, 0.2);
+    color: #fff;
+    box-shadow: 0 0 30px rgba(0, 242, 254, 0.6);
+    transform: translateX(6px);
+}
+
+/* BOTÓN TIENDA */
+.btn-tienda {
+    border-color: var(--accent-purple);
+    color: #e0aaff;
+    box-shadow: 0 0 18px rgba(157, 78, 221, 0.25);
+}
+
+.btn-tienda::before {
+    content: '';
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    margin-right: 18px;
+    background-color: currentColor;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z'></path><line x1='3' y1='6' x2='21' y2='6'></line><path d='M16 10a4 4 0 0 1-8 0'></path></svg>") no-repeat center / contain;
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z'></path><line x1='3' y1='6' x2='21' y2='6'></line><path d='M16 10a4 4 0 0 1-8 0'></path></svg>") no-repeat center / contain;
 }
 
 .btn-tienda:hover {
-    border-color: var(--accent-purple);
-    color: #e0aaff;
-    box-shadow: 0 0 10px rgba(121, 40, 202, 0.3) inset;
+    background: rgba(157, 78, 221, 0.25);
+    color: #ffffff;
+    box-shadow: 0 0 30px var(--accent-purple-glow);
+    transform: translateX(6px);
+}
+
+/* BOTÓN SIGN OUT (LOGOUT) */
+.btn-logout {
+    border: 2px solid var(--accent-red);
+    color: #ffb3c1;
+    padding: 22px 28px;
+    border-radius: 0 !important;
+    background: rgba(255, 77, 109, 0.1);
+    box-shadow: 0 0 18px rgba(255, 77, 109, 0.25);
+    font-size: 1.3rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    width: 100%;
+}
+
+.btn-logout::before {
+    content: '';
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    margin-right: 18px;
+    background-color: currentColor;
+    mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'></path><polyline points='16 17 21 12 16 7'></polyline><line x1='21' y1='12' x2='9' y2='12'></line></svg>") no-repeat center / contain;
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'></path><polyline points='16 17 21 12 16 7'></polyline><line x1='21' y1='12' x2='9' y2='12'></line></svg>") no-repeat center / contain;
 }
 
 .btn-logout:hover {
-    border-color: var(--accent-red);
-    color: var(--accent-red);
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2) inset;
+    background: rgba(255, 77, 109, 0.3);
+    color: #ffffff;
+    box-shadow: 0 0 30px var(--accent-red-glow);
+    transform: translateX(6px);
 }
 
-/* --- MENSAJE CENTRAL --- */
+/* CENTRADO DE MONEDAS Y BIENVENIDA ALINEADO */
+.lobby-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 30px;
+    pointer-events: none;
+    z-index: 100;
+}
+
 .mensaje-sistema {
-    background-color: rgba(16, 20, 29, 0.8);
-    border: 1px solid var(--border-color);
-    padding: 12px 30px;
-    border-radius: 30px;
+    pointer-events: auto;
+    background: rgba(11, 15, 25, 0.9);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    padding: 14px 36px;
+    border-radius: 0px;
     color: var(--text-main);
-    font-size: 0.95rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(5px);
+    font-size: 1.1rem;
+    font-weight: 600;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    animation: goldPulse 3s ease-in-out infinite alternate;
 }
 
 .mensaje-sistema strong {
     color: #ffd700;
+    font-size: 1.25rem;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
 }
 
-/* --- ESCENARIO CENTRAL (AVATAR) --- */
+/* =========================================================
+   3. ESCENARIO CENTRAL Y AVATAR HOLOGRÁFICO
+   ========================================================= */
 .lobby-stage {
-    flex: 1;
+    position: absolute;
+    top: 50%;               /* CENTRADO PERFECTO: Se ubica en la mitad exacta de la pantalla */
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
+    perspective: 1000px;
+    z-index: 5;
 }
 
+/* MARCO DEL AVATAR */
 .avatar-display {
-    width: 300px;
-    height: 300px;
-    border: 2px solid var(--border-color);
-    border-radius: 20px;
-    background-color: var(--bg-card);
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(0, 242, 254, 0.15) 0%, rgba(16, 22, 34, 0.85) 75%);
+    border: 2px solid var(--primary-neon);
+    clip-path: polygon(15% 0, 85% 0, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0 85%, 0 15%);
     display: flex;
     justify-content: center;
     align-items: center;
-    color: var(--text-muted);
-    font-size: 1.5rem;
-    letter-spacing: 2px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5) inset;
-    transition: border-color 0.3s ease;
+    color: var(--primary-neon);
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    position: relative;
+    overflow: hidden;
+    animation: 
+        avatarFloat 4s ease-in-out infinite,
+        neonPulse 2.5s ease-in-out infinite alternate;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* EFECTO LÁSER ESCÁNER */
+.avatar-display::before {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(0, 242, 254, 0.4),
+        var(--primary-neon),
+        transparent
+    );
+    z-index: 10;
+    pointer-events: none;
+    animation: scanlaser 3s ease-in-out infinite;
+}
+
+/* PLATAFORMA HOLOGRÁFICA */
+.avatar-display::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    width: 220px;
+    height: 45px;
+    background: radial-gradient(ellipse, rgba(0, 242, 254, 0.6) 0%, rgba(121, 40, 202, 0.3) 50%, transparent 75%);
+    border-radius: 50%;
+    transform: rotateX(75deg);
+    z-index: -1;
+    pointer-events: none;
+    animation: holoPlatform 4s ease-in-out infinite;
+    filter: blur(2px);
 }
 
 .avatar-display:hover {
-    border-color: var(--secondary-neon);
+    transform: scale(1.08) translateY(-10px);
+    border-color: #ffffff;
+    box-shadow: 0 0 50px rgba(0, 242, 254, 0.8),
+                inset 0 0 25px rgba(0, 242, 254, 0.4);
 }
 
+/* NOMBRE DE JUGADOR */
 .player-name {
-    font-size: 1.8rem;
-    color: var(--text-main);
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    font-size: 2.3rem;
+    font-weight: 900;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 
+        0 0 10px rgba(0, 242, 254, 0.8),
+        0 0 20px rgba(0, 242, 254, 0.4),
+        0 0 40px rgba(121, 40, 202, 0.4);
+    position: relative;
+    animation: textGlow 3s ease-in-out infinite alternate;
 }
 
-/* --- BOTÓN JUGAR (ESQUINA INFERIOR) --- */
+/* --- BOTÓN JUGAR --- */
 .lobby-bottom-right {
     position: absolute;
     bottom: 40px;
     right: 40px;
+    z-index: 20;
 }
 
 .btn-jugar-gigante {
     background: linear-gradient(135deg, var(--secondary-neon), var(--primary-neon));
     color: #000;
     border: none;
-    padding: 18px 35px;
-    border-radius: 15px;
-    font-size: 1.3rem;
-    font-weight: bold;
+    padding: 20px 50px;
+    border-radius: 0px;
+    font-size: 1.5rem;
+    font-weight: 900;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(0, 242, 254, 0.4);
-    transition: transform 0.2s ease, filter 0.2s ease;
+    box-shadow: 0 0 30px rgba(0, 242, 254, 0.5);
+    transition: all 0.3s ease;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
 }
 
 .btn-jugar-gigante:hover {
-    transform: scale(1.05) translateY(-5px);
-    filter: brightness(1.2);
+    transform: scale(1.06) translateY(-4px);
+    filter: brightness(1.25);
+    box-shadow: 0 0 45px rgba(0, 242, 254, 0.8);
 }
 
 /* =========================================================
-   DISEÑO RESPONSIVE (Móviles y Tablets pequeñas)
+   4. ANIMACIONES KEYFRAMES
+   ========================================================= */
+@keyframes avatarFloat {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-16px) rotate(0.5deg);
+    }
+}
+
+@keyframes neonPulse {
+    0% {
+        box-shadow: 0 0 20px rgba(0, 242, 254, 0.3), inset 0 0 10px rgba(0, 242, 254, 0.1);
+    }
+    100% {
+        box-shadow: 0 0 40px rgba(0, 242, 254, 0.6), inset 0 0 20px rgba(0, 242, 254, 0.3);
+    }
+}
+
+@keyframes scanlaser {
+    0% {
+        top: -40%;
+    }
+    50%, 100% {
+        top: 140%;
+    }
+}
+
+@keyframes holoPlatform {
+    0%, 100% {
+        transform: rotateX(75deg) scale(1);
+        opacity: 0.7;
+    }
+    50% {
+        transform: rotateX(75deg) scale(1.15);
+        opacity: 1;
+    }
+}
+
+@keyframes textGlow {
+    0% {
+        text-shadow: 0 0 10px rgba(0, 242, 254, 0.8), 0 0 20px rgba(0, 242, 254, 0.4);
+    }
+    100% {
+        text-shadow: 0 0 15px rgba(0, 242, 254, 1), 0 0 30px rgba(121, 40, 202, 0.8), 0 0 45px rgba(0, 242, 254, 0.5);
+    }
+}
+
+@keyframes goldPulse {
+    0% {
+        border-color: rgba(255, 215, 0, 0.3);
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.15);
+    }
+    100% {
+        border-color: rgba(255, 215, 0, 0.7);
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.35);
+    }
+}
+
+/* =========================================================
+   5. ADAPTACIÓN RESPONSIVA
    ========================================================= */
 @media (max-width: 768px) {
+    .auth-card {
+        padding: 30px 20px;
+    }
+
     .dashboard-wrapper {
         padding: 20px;
-        overflow-y: auto; /* Permite scroll si la pantalla es muy pequeña */
+        overflow-y: auto;
     }
 
     .lobby-header {
+        height: auto;
         flex-direction: column;
         align-items: center;
-        gap: 20px;
+        gap: 15px;
     }
 
     .lobby-left {
-        flex-direction: row;
         width: 100%;
-        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+        gap: 20px;
     }
 
-    .lobby-right {
-        position: absolute;
-        top: 20px;
-        right: 20px;
+    .lobby-left-top {
+        width: 100%;
+        gap: 200px;
     }
 
-    /* Ocultamos el texto del botón logout en móvil para ahorrar espacio */
-    .btn-logout {
-        font-size: 0;
-        padding: 10px;
+    .lobby-stage {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        margin-top: 30px;
+        margin-bottom: 30px;
     }
-    .btn-logout::before {
-        content: '⏻';
-        font-size: 1.2rem;
+
+    .lobby-center {
+        position: relative;
+        left: auto;
+        transform: none;
+        top: auto;
+        margin-top: 10px;
     }
 
     .avatar-display {
-        width: 250px;
-        height: 250px;
+        width: 240px;
+        height: 240px;
+    }
+
+    .player-name {
+        font-size: 1.7rem;
     }
 
     .lobby-bottom-right {
-        position: relative; /* Quita el botón de la esquina */
+        position: relative;
         bottom: auto;
         right: auto;
         margin-top: 20px;
         display: flex;
         justify-content: center;
+        width: 100%;
+    }
+
+    .btn-jugar-gigante {
+        width: 100%;
+        max-width: 320px;
     }
 }

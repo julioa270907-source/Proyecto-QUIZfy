@@ -25,7 +25,7 @@ function mostrarTabAuth(tab) {
 }
 
 // ----------------------------------------------------
-// 2. FUNCION: REGISTRAR USUARIO
+// 2. REGISTRAR USUARIO
 // ----------------------------------------------------
 async function registrarUsuario(event) {
     event.preventDefault();
@@ -53,7 +53,7 @@ async function registrarUsuario(event) {
                 icon: 'success',
                 title: '¡Cuenta creada con éxito!',
                 text: res.mensaje,
-                confirmColor: '#6c5ce7'
+                confirmColor: '#00f2fe'
             });
             document.getElementById('form-registro').reset();
             mostrarTabAuth('login');
@@ -62,7 +62,7 @@ async function registrarUsuario(event) {
                 icon: 'error',
                 title: 'Error de registro',
                 text: res.mensaje,
-                confirmColor: '#ff4757'
+                confirmColor: '#ff4d6d'
             });
         }
     } catch (error) {
@@ -71,13 +71,13 @@ async function registrarUsuario(event) {
             icon: 'error',
             title: 'Error del Servidor',
             text: 'No se pudo procesar la solicitud en la base de datos.',
-            confirmColor: '#ff4757'
+            confirmColor: '#ff4d6d'
         });
     }
 }
 
 // ----------------------------------------------------
-// 3. FUNCION: INICIAR SESIÓN (LOGIN)
+// 3. INICIAR SESIÓN (LOGIN)
 // ----------------------------------------------------
 async function iniciarSesion(event) {
     event.preventDefault();
@@ -112,7 +112,7 @@ async function iniciarSesion(event) {
                 icon: 'error',
                 title: 'Acceso Denegado',
                 text: res.mensaje,
-                confirmColor: '#ff4757'
+                confirmColor: '#ff4d6d'
             });
         }
     } catch (error) {
@@ -121,7 +121,7 @@ async function iniciarSesion(event) {
             icon: 'error',
             title: 'Error de Conexión',
             text: 'Ocurrió un problema al conectar con la API.',
-            confirmColor: '#ff4757'
+            confirmColor: '#ff4d6d'
         });
     }
 }
@@ -141,8 +141,8 @@ async function verificarSesion() {
         }
     } catch (error) {
         console.error('Error al verificar sesión:', error);
+        mostrarVista('auth');
     }
-    cargarAvatarPorDefecto();
 }
 
 // ----------------------------------------------------
@@ -163,7 +163,7 @@ async function cerrarSesion() {
 }
 
 // ----------------------------------------------------
-// FUNCIONES AUXILIARES DE NAVEGACIÓN
+// NAVEGACIÓN Y RENDERIZADO
 // ----------------------------------------------------
 function mostrarVista(vista) {
     const vistaAuth = document.getElementById('vista-auth');
@@ -179,13 +179,48 @@ function mostrarVista(vista) {
 }
 
 function renderizarUsuario(usuario) {
-    document.getElementById('lbl-nombre-usuario').innerText = usuario.nombre_usuario;
-    document.getElementById('btn-nombre-usuario').innerText = usuario.nombre_usuario;
-    document.getElementById('lbl-monedas').innerText = usuario.monedas;
+    const lblNombre = document.getElementById('lbl-nombre-usuario');
+    const btnNombre = document.getElementById('btn-nombre-usuario');
+
+    if (lblNombre) lblNombre.innerText = usuario.nombre_usuario;
+    if (btnNombre) btnNombre.innerText = usuario.nombre_usuario;
+
     mostrarVista('dashboard');
+    cargarAvatarUsuario();
+    
+    // Ejecutar la animación de bienvenida de entrada
+    animarMensajeBienvenida(usuario);
 }
 
-// Cargar el Avatar del Jugador en el Lobby o Vestidor
+// ----------------------------------------------------
+// NUEVA FUNCIÓN: ANIMACIÓN TEMPORAL DE BIENVENIDA
+// ----------------------------------------------------
+function animarMensajeBienvenida(usuario) {
+    const contenedorMensaje = document.querySelector('.mensaje-sistema');
+    if (!contenedorMensaje) return;
+
+    // Aseguramos transiciones suaves para la salida
+    contenedorMensaje.style.transition = 'all 0.5s ease';
+    
+    // 1. Mostrar de inmediato el texto con las monedas
+    contenedorMensaje.innerHTML = `Bienvenido, tienes <strong id="lbl-monedas">${usuario.monedas}</strong> monedas`;
+
+    // 2. Pasados 2.5 segundos, lo desvanecemos y ocultamos
+    setTimeout(() => {
+        contenedorMensaje.style.opacity = '0';
+        contenedorMensaje.style.transform = 'scale(0.9)'; // Efecto sutil de achicamiento al desaparecer
+
+        // Esperamos 500ms (lo que dura la transición) para ocultar el elemento por completo
+        setTimeout(() => {
+            contenedorMensaje.style.display = 'none';
+        }, 500);
+
+    }, 2500);
+}
+
+// ----------------------------------------------------
+// GESTIÓN Y RENDERIZADO DEL AVATAR
+// ----------------------------------------------------
 async function cargarAvatarUsuario() {
     try {
         const response = await fetch('api/api_avatar.php?accion=obtener_avatar');
@@ -193,22 +228,26 @@ async function cargarAvatarUsuario() {
 
         if (res.status === 'success' && res.avatar) {
             renderizarAvatarHTML(res.avatar);
+        } else {
+            renderizarAvatarDefecto();
         }
     } catch (error) {
         console.error('Error al cargar el avatar:', error);
+        renderizarAvatarDefecto();
     }
 }
 
-// Renderiza las capas visuales (Personaje + Accesorios con offsets)
 function renderizarAvatarHTML(avatar) {
     const contenedor = document.querySelector('.avatar-display');
+    if (!contenedor) return;
+
     contenedor.style.position = 'relative';
-    contenedor.innerHTML = ''; // Limpiar el texto "AVATAR"
+    contenedor.innerHTML = ''; 
 
     // 1. Capa Base: Personaje
     const imgBase = document.createElement('img');
     imgBase.src = avatar.ruta_imagen;
-    imgBase.alt = avatar.personaje_nombre;
+    imgBase.alt = avatar.personaje_nombre || 'Personaje Base';
     imgBase.style.width = '100%';
     imgBase.style.height = '100%';
     imgBase.style.objectFit = 'contain';
@@ -217,43 +256,31 @@ function renderizarAvatarHTML(avatar) {
     contenedor.appendChild(imgBase);
 
     // 2. Capas de Accesorios Equipados
-    avatar.items_equipados.forEach((item, index) => {
-        const imgItem = document.createElement('img');
-        imgItem.src = item.ruta_svg;
-        imgItem.alt = item.item_nombre;
-        imgItem.style.position = 'absolute';
-        imgItem.style.width = `${item.width}px`;
-        imgItem.style.left = `${item.pos_x}px`;
-        imgItem.style.top = `${item.pos_y}px`;
-        imgItem.style.transform = `rotate(${item.rotacion}deg)`;
-        imgItem.style.zIndex = (index + 2).toString(); // Quedan por encima del personaje base
-        
-        contenedor.appendChild(imgItem);
-    });
+    if (avatar.items_equipados && Array.isArray(avatar.items_equipados)) {
+        avatar.items_equipados.forEach((item, index) => {
+            const imgItem = document.createElement('img');
+            imgItem.src = item.ruta_svg;
+            imgItem.alt = item.item_nombre;
+            imgItem.style.position = 'absolute';
+            imgItem.style.width = `${item.width}px`;
+            imgItem.style.left = `${item.pos_x}px`;
+            imgItem.style.top = `${item.pos_y}px`;
+            imgItem.style.transform = `rotate(${item.rotacion}deg)`;
+            imgItem.style.zIndex = (index + 2).toString();
+            
+            contenedor.appendChild(imgItem);
+        });
+    }
 }
 
-// ----------------------------------------------------
-// FUNCIÓN: Cargar Avatar por Defecto del Usuario
-// ----------------------------------------------------
-async function cargarAvatarPorDefecto() {
-    try {
-        const response = await fetch('api/api_avatar.php?accion=obtener_avatar');
-        const res = await response.json();
+function renderizarAvatarDefecto() {
+    const contenedor = document.querySelector('.avatar-display');
+    if (!contenedor) return;
 
-        if (res.status === 'success' && res.avatar) {
-            // Renderizar usando la función auxiliar que ya tienes
-            renderizarAvatarHTML(res.avatar);
-        } else {
-            // Si no hay avatar asignado, mostrar uno por defecto
-            const contenedor = document.querySelector('.avatar-display');
-            contenedor.style.position = 'relative';
-            contenedor.innerHTML = `
-                <img src="img/avatars/default.svg" 
-                     alt="Avatar por defecto" 
-                     style="width:100%; height:100%; object-fit:contain; position:absolute; z-index:1;">
-            `;
-        }
-    } catch (error) {
-        console.error('Error al cargar avatar por defecto:', error);
-    }
+    contenedor.style.position = 'relative';
+    contenedor.innerHTML = `
+        <img src="img/avatars/default.svg" 
+             alt="Avatar por defecto" 
+             style="width:100%; height:100%; object-fit:contain; position:absolute; z-index:1;">
+    `;
 }
