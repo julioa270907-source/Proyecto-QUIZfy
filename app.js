@@ -284,3 +284,35 @@ function renderizarAvatarDefecto() {
              style="width:100%; height:100%; object-fit:contain; position:absolute; z-index:1;">
     `;
 }
+
+// MODULO DE TIENDA, INGRESAR A LA TIENDA
+
+// Extensión de mostrarVista para incluir la tienda
+function mostrarVista(vista) {
+    const vistaAuth = document.getElementById('vista-auth');
+    const vistaDashboard = document.getElementById('vista-dashboard');
+    const vistaTienda = document.getElementById('vista-tienda');
+
+    if (vista === 'auth') {
+        vistaAuth.classList.remove('d-none');
+        vistaDashboard.classList.add('d-none');
+        vistaTienda.classList.add('d-none');
+    } else if (vista === 'dashboard') {
+        vistaAuth.classList.add('d-none');
+        vistaDashboard.classList.remove('d-none');
+        vistaTienda.classList.add('d-none');
+    } else if (vista === 'tienda') {
+        vistaAuth.classList.add('d-none');
+        vistaDashboard.classList.add('d-none');
+        vistaTienda.classList.remove('d-none');
+    }
+}
+
+// Reutiliza mostrarVista en tus funciones de tienda
+function abrirTienda() {
+  mostrarVista('tienda');
+}
+
+function cerrarTienda() {
+  mostrarVista('dashboard');
+}
