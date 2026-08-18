@@ -5,7 +5,7 @@ class Conexion {
     private $port = '5432';
     private $dbname = 'tienda'; // Reemplaza con el nombre real
     private $user = 'postgres';
-    private $password = 'eli2007f25'; // Reemplaza con tu clave real
+    private $password = 'admin123'; // Reemplaza con tu clave real
     private $conexion;
 
     public function conectar() {
