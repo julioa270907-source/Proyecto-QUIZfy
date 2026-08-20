@@ -545,19 +545,27 @@ body {
         overflow-y: auto;
     }
 
-    .lobby-header {
-        height: auto;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
+    /* Corregir la altura de la cabecera */
+.lobby-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    z-index: 10;
+    position: relative;
+    height: auto; /* Cambiado de 0 a auto */
+}
 
-    .lobby-left {
-        width: 100%;
-        align-items: center;
-        margin-top: 20px;
-        gap: 20px;
-    }
+/* Asegurar que el contenedor de botones esté por encima de todo */
+.lobby-left {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    width: 320px;
+    margin-top: 20px;
+    z-index: 50; /* Aumentado para priorizar los clics */
+    position: relative;
+}
 
     .lobby-left-top {
         width: 100%;
@@ -839,4 +847,25 @@ DISEÑO PARA LA TIENDA (panel completo con todos los botones)
 }
 .tienda-wrapper .btn-reset:hover {
   background: #cc0000;
+}
+/* Estilo personalizado para el Modal del Perfil (Cyberpunk) */
+.swal2-popup.cyber-modal {
+    background: var(--bg-sidebar) !important;
+    border: 2px solid var(--primary-neon) !important;
+    color: var(--text-main) !important;
+    border-radius: 0px !important;
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.2) !important;
+}
+
+.swal2-title {
+    color: var(--primary-neon) !important;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.cyber-content {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-left: 3px solid var(--primary-neon);
+    text-align: left;
 }

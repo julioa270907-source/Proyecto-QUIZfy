@@ -53,7 +53,7 @@ async function registrarUsuario(event) {
                 icon: 'success',
                 title: '¡Cuenta creada con éxito!',
                 text: res.mensaje,
-                confirmColor: '#00f2fe'
+                confirmButtonColor: '#00f2fe'
             });
             document.getElementById('form-registro').reset();
             mostrarTabAuth('login');
@@ -62,7 +62,7 @@ async function registrarUsuario(event) {
                 icon: 'error',
                 title: 'Error de registro',
                 text: res.mensaje,
-                confirmColor: '#ff4d6d'
+                confirmButtonColor: '#ff4d6d'
             });
         }
     } catch (error) {
@@ -71,7 +71,7 @@ async function registrarUsuario(event) {
             icon: 'error',
             title: 'Error del Servidor',
             text: 'No se pudo procesar la solicitud en la base de datos.',
-            confirmColor: '#ff4d6d'
+            confirmButtonColor: '#ff4d6d'
         });
     }
 }
@@ -112,7 +112,7 @@ async function iniciarSesion(event) {
                 icon: 'error',
                 title: 'Acceso Denegado',
                 text: res.mensaje,
-                confirmColor: '#ff4d6d'
+                confirmButtonColor: '#ff4d6d'
             });
         }
     } catch (error) {
@@ -121,7 +121,7 @@ async function iniciarSesion(event) {
             icon: 'error',
             title: 'Error de Conexión',
             text: 'Ocurrió un problema al conectar con la API.',
-            confirmColor: '#ff4d6d'
+            confirmButtonColor: '#ff4d6d'
         });
     }
 }
@@ -163,18 +163,25 @@ async function cerrarSesion() {
 }
 
 // ----------------------------------------------------
-// NAVEGACIÓN Y RENDERIZADO
+// NAVEGACIÓN Y GESTIÓN DE VISTAS
 // ----------------------------------------------------
 function mostrarVista(vista) {
     const vistaAuth = document.getElementById('vista-auth');
     const vistaDashboard = document.getElementById('vista-dashboard');
+    const vistaTienda = document.getElementById('vista-tienda');
 
+    // Ocultar todas las vistas primero
+    vistaAuth.classList.add('d-none');
+    vistaDashboard.classList.add('d-none');
+    if (vistaTienda) vistaTienda.classList.add('d-none');
+
+    // Mostrar la vista solicitada
     if (vista === 'auth') {
         vistaAuth.classList.remove('d-none');
-        vistaDashboard.classList.add('d-none');
     } else if (vista === 'dashboard') {
-        vistaAuth.classList.add('d-none');
         vistaDashboard.classList.remove('d-none');
+    } else if (vista === 'tienda') {
+        if (vistaTienda) vistaTienda.classList.remove('d-none');
     }
 }
 
@@ -187,30 +194,25 @@ function renderizarUsuario(usuario) {
 
     mostrarVista('dashboard');
     cargarAvatarUsuario();
-    
-    // Ejecutar la animación de bienvenida de entrada
     animarMensajeBienvenida(usuario);
 }
 
 // ----------------------------------------------------
-// NUEVA FUNCIÓN: ANIMACIÓN TEMPORAL DE BIENVENIDA
+// ANIMACIÓN TEMPORAL DE BIENVENIDA
 // ----------------------------------------------------
 function animarMensajeBienvenida(usuario) {
     const contenedorMensaje = document.querySelector('.mensaje-sistema');
     if (!contenedorMensaje) return;
 
-    // Aseguramos transiciones suaves para la salida
     contenedorMensaje.style.transition = 'all 0.5s ease';
-    
-    // 1. Mostrar de inmediato el texto con las monedas
-    contenedorMensaje.innerHTML = `Bienvenido, tienes <strong id="lbl-monedas">${usuario.monedas}</strong> monedas`;
+    contenedorMensaje.innerHTML = `¡Bienvenido! Tienes <strong id="lbl-monedas">${usuario.monedas}</strong> monedas.`;
+    contenedorMensaje.style.opacity = '1';
+    contenedorMensaje.style.display = 'block';
 
-    // 2. Pasados 2.5 segundos, lo desvanecemos y ocultamos
     setTimeout(() => {
         contenedorMensaje.style.opacity = '0';
-        contenedorMensaje.style.transform = 'scale(0.9)'; // Efecto sutil de achicamiento al desaparecer
+        contenedorMensaje.style.transform = 'scale(0.9)';
 
-        // Esperamos 500ms (lo que dura la transición) para ocultar el elemento por completo
         setTimeout(() => {
             contenedorMensaje.style.display = 'none';
         }, 500);
@@ -244,7 +246,6 @@ function renderizarAvatarHTML(avatar) {
     contenedor.style.position = 'relative';
     contenedor.innerHTML = ''; 
 
-    // 1. Capa Base: Personaje
     const imgBase = document.createElement('img');
     imgBase.src = avatar.ruta_imagen;
     imgBase.alt = avatar.personaje_nombre || 'Personaje Base';
@@ -255,7 +256,6 @@ function renderizarAvatarHTML(avatar) {
     imgBase.style.zIndex = '1';
     contenedor.appendChild(imgBase);
 
-    // 2. Capas de Accesorios Equipados
     if (avatar.items_equipados && Array.isArray(avatar.items_equipados)) {
         avatar.items_equipados.forEach((item, index) => {
             const imgItem = document.createElement('img');
@@ -285,58 +285,15 @@ function renderizarAvatarDefecto() {
     `;
 }
 
-// MODULO DE TIENDA, INGRESAR A LA TIENDA
-
-// Extensión de mostrarVista para incluir la tienda
-// Reutiliza mostrarVista en tus funciones de tienda
+// ----------------------------------------------------
+// MÓDULO DE TIENDA Y PERFIL
+// ----------------------------------------------------
 function abrirTienda() {
-  mostrarVista('tienda');
+    mostrarVista('tienda');
 }
 
 function cerrarTienda() {
-  mostrarVista('dashboard');
-}
-
-function guardarCambios() {
-  Swal.fire("Guardado", "Tu avatar se actualizó", "success");
-}
-
-function quitarTodo() {
-  Swal.fire("Reiniciado", "Tu avatar volvió al estado base", "info");
-}
-
-function editarSeccion(seccion) {
-  Swal.fire("Editar sección", "Aquí editarás: " + seccion, "info");
-}
-
-// ✅ Funciones de la tienda
-
-function mostrarVistaExtendida(vista) {
-    const vistaAuth = document.getElementById('vista-auth');
-    const vistaDashboard = document.getElementById('vista-dashboard');
-    const vistaTienda = document.getElementById('vista-tienda');
-
-    if (vista === 'auth') {
-        vistaAuth.classList.remove('d-none');
-        vistaDashboard.classList.add('d-none');
-        vistaTienda.classList.add('d-none');
-    } else if (vista === 'dashboard') {
-        vistaAuth.classList.add('d-none');
-        vistaDashboard.classList.remove('d-none');
-        vistaTienda.classList.add('d-none');
-    } else if (vista === 'tienda') {
-        vistaAuth.classList.add('d-none');
-        vistaDashboard.classList.add('d-none');
-        vistaTienda.classList.remove('d-none');
-    }
-}
-
-function abrirTienda() {
-    mostrarVistaExtendida('tienda');
-}
-
-function cerrarTienda() {
-    mostrarVistaExtendida('dashboard');
+    mostrarVista('dashboard');
 }
 
 function guardarCambios() {
@@ -350,3 +307,79 @@ function quitarTodo() {
 function editarSeccion(seccion) {
     Swal.fire("Editar sección", "Aquí editarás: " + seccion, "info");
 }
+
+// FUNCIÓN CORREGIDA PARA EL BOTÓN DE PERFIL
+
+// 1. Declaramos la función globalmente para que siempre esté disponible
+async function abrirPerfil() {
+    console.log("1. ¡Se presionó el botón de perfil!");
+
+    try {
+        const response = await fetch('api/api_auth.php?accion=verificar_sesion');
+        
+        // Verifica si la respuesta HTTP es válida (200 OK)
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+
+        const res = await response.json();
+        console.log("2. Respuesta del servidor:", res);
+
+        if (res.status === 'authenticated') {
+            const user = res.usuario;
+
+            Swal.fire({
+                title: 'Información de Usuario',
+                html: `
+                    <div class="cyber-content">
+                        <p style="margin: 10px 0;"><strong>👤 Usuario:</strong> ${user.nombre_usuario}</p>
+                        <p style="margin: 10px 0;"><strong>📧 Correo:</strong> ${user.correo}</p>
+                    </div>
+                `,
+                customClass: { popup: 'cyber-modal' },
+                confirmButtonText: 'CERRAR',
+                confirmButtonColor: '#00f2fe',
+                background: '#0b0f19',
+                color: '#fff'
+            });
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sesión no iniciada',
+                text: 'Por favor, inicia sesión para ver tu perfil.',
+                confirmButtonColor: '#ff4d6d'
+            });
+        }
+    } catch (error) {
+        console.error('Error al abrir el perfil:', error);
+        // Alerta visual para saber qué falló exactamente
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Conexión',
+            text: 'No se pudo obtener la información. Asegúrate de estar ejecutando el proyecto en un servidor local (XAMPP/WAMP).',
+            confirmButtonColor: '#ff4d6d'
+        });
+    }
+}
+
+// 2. Conexión segura usando delegación de eventos global (Funciona siempre aunque el botón aparezca después)
+document.addEventListener('click', (event) => {
+    // Verificamos si el elemento clickeado es el botón de perfil o está dentro de él
+    const btnPerfil = event.target.closest('#btn-perfil');
+    if (btnPerfil) {
+        event.preventDefault();
+        abrirPerfil();
+    }
+});
+
+function abrirSeleccionQuiz() {
+    Swal.fire("¡Próximamente!", "La selección de quizzes estará disponible muy pronto.", "info");
+}
+
+// Conectar el botón de perfil de forma segura al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+    const btnPerfil = document.getElementById('btn-perfil');
+    if (btnPerfil) {
+        btnPerfil.addEventListener('click', abrirPerfil);
+    }
+});
