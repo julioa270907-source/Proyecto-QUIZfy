@@ -288,7 +288,30 @@ function renderizarAvatarDefecto() {
 // MODULO DE TIENDA, INGRESAR A LA TIENDA
 
 // Extensión de mostrarVista para incluir la tienda
-function mostrarVista(vista) {
+// Reutiliza mostrarVista en tus funciones de tienda
+function abrirTienda() {
+  mostrarVista('tienda');
+}
+
+function cerrarTienda() {
+  mostrarVista('dashboard');
+}
+
+function guardarCambios() {
+  Swal.fire("Guardado", "Tu avatar se actualizó", "success");
+}
+
+function quitarTodo() {
+  Swal.fire("Reiniciado", "Tu avatar volvió al estado base", "info");
+}
+
+function editarSeccion(seccion) {
+  Swal.fire("Editar sección", "Aquí editarás: " + seccion, "info");
+}
+
+// ✅ Funciones de la tienda
+
+function mostrarVistaExtendida(vista) {
     const vistaAuth = document.getElementById('vista-auth');
     const vistaDashboard = document.getElementById('vista-dashboard');
     const vistaTienda = document.getElementById('vista-tienda');
@@ -308,11 +331,22 @@ function mostrarVista(vista) {
     }
 }
 
-// Reutiliza mostrarVista en tus funciones de tienda
 function abrirTienda() {
-  mostrarVista('tienda');
+    mostrarVistaExtendida('tienda');
 }
 
 function cerrarTienda() {
-  mostrarVista('dashboard');
+    mostrarVistaExtendida('dashboard');
+}
+
+function guardarCambios() {
+    Swal.fire("Guardado", "Tu avatar se actualizó", "success");
+}
+
+function quitarTodo() {
+    Swal.fire("Reiniciado", "Tu avatar volvió al estado base", "info");
+}
+
+function editarSeccion(seccion) {
+    Swal.fire("Editar sección", "Aquí editarás: " + seccion, "info");
 }

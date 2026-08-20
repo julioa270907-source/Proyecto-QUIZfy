@@ -104,17 +104,28 @@
         
         <!-- 🛒 Sección Tienda (oculta al inicio) -->
 <section id="vista-tienda" class="tienda-wrapper d-none">
-    <h2>Tienda de Avatares</h2>
-    <p>Aquí podrás comprar accesorios y personalizar tu avatar.</p>
+    <button class="btn-back" onclick="cerrarTienda()">⬅ Volver</button>
 
-    <div class="productos">
-        <div class="producto">🎩 Sombrero magico</div>
-        <div class="producto">👕 Camisa épica</div>
-        <div class="producto">🖼️ Marco dorado</div>
+    <div class="avatar-preview">
+        <span>👤</span>
     </div>
 
-    <button onclick="cerrarTienda()" class="btn-lobby-outline">Cerrar Tienda</button>
+    <div class="input-group">
+        <label for="nombre-usuario">Nombre de Usuario</label>
+        <input type="text" id="nombre-usuario" class="username-input" maxlength="15" placeholder="Ej. GamerPro">
+        <button class="btn-save" onclick="guardarCambios()">Guardar cambios</button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn" onclick="editarSeccion('cabeza')">Cabeza</button>
+        <button class="tab-btn" onclick="editarSeccion('ropa')">Ropa</button>
+        <button class="tab-btn" onclick="editarSeccion('accesorios')">Accesorios</button>
+        <button class="tab-btn" onclick="editarSeccion('marco')">Marco</button>
+    </div>
+
+    <button class="btn-reset" onclick="quitarTodo()">Quitar todo</button>
 </section>
+
 
 
     </main>
