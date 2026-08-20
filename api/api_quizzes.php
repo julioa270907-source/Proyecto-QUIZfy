@@ -4,149 +4,231 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
 require_once 'conexion.php';
+
 $db = new Conexion();
 $conexion = $db->conectar();
-$accion = $_REQUEST['accion'] ?? '';
+
+$body = json_decode(file_get_contents('php://input'), true) ?? [];
+$data = array_merge($_REQUEST, $_POST, $body);
+
+$accion = $data['accion'] ?? '';
 
 switch($accion) {
+
+    // 1. LEER TODOS LOS QUIZZES
     case 'leer':
         try {
-            // Hacemos un JOIN para traer el nombre de la categoría en lugar de solo su ID
-            $query = "SELECT q.*, c.nombre as categoria_nombre 
+            $query = "SELECT q.*, c.nombre AS categoria_nombre 
                       FROM quizzes q 
                       LEFT JOIN quiz_categorias c ON q.categoria_id = c.id 
                       ORDER BY q.id DESC";
             $stmt = $conexion->query($query);
-            echo json_encode(["status" => "success", "data" => $stmt->fetchAll()]);
+            $quizzes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            http_response_code(200);
+            echo json_encode(["status" => "success", "data" => $quizzes]);
         } catch(Exception $e) {
+            http_response_code(500);
             echo json_encode(["status" => "error", "mensaje" => $e->getMessage()]);
         }
         break;
 
+    // 2. LEER UN QUIZ ESPECÍFICO CON SUS PREGUNTAS
     case 'leer_un_quiz':
         try {
-            $id = $_GET['id'] ?? null;
-            if(!$id) throw new Exception("ID no proporcionado");
+            $id = $data['id'] ?? $_GET['id'] ?? null;
 
-            // 1. Obtener datos básicos del Quiz
-            $stmtQuiz = $conexion->prepare("SELECT * FROM quizzes WHERE id = :id");
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(["status" => "error", "mensaje" => "ID de Quiz no proporcionado."]);
+                exit;
+            }
+
+            $stmtQuiz = $conexion->prepare("
+                SELECT q.*, c.nombre AS categoria_nombre 
+                FROM quizzes q 
+                LEFT JOIN quiz_categorias c ON q.categoria_id = c.id 
+                WHERE q.id = :id
+            ");
             $stmtQuiz->execute([':id' => $id]);
             $quiz = $stmtQuiz->fetch(PDO::FETCH_ASSOC);
 
-            // 2. Obtener las preguntas asociadas
-            $stmtPreg = $conexion->prepare("SELECT * FROM preguntas WHERE quiz_id = :id");
-            $stmtPreg->execute([':id' => $id]);
-            $preguntas = $stmtPreg->fetchAll(PDO::FETCH_ASSOC);
+            if (!$quiz) {
+                http_response_code(404);
+                echo json_encode(["status" => "error", "mensaje" => "Quiz no encontrado."]);
+                exit;
+            }
 
-            echo json_encode(["status" => "success", "data" => ["quiz" => $quiz, "preguntas" => $preguntas]]);
+            $stmtPreguntas = $conexion->prepare("SELECT * FROM preguntas WHERE quiz_id = :id ORDER BY id ASC");
+            $stmtPreguntas->execute([':id' => $id]);
+            $quiz['preguntas'] = $stmtPreguntas->fetchAll(PDO::FETCH_ASSOC);
+
+            http_response_code(200);
+            echo json_encode(["status" => "success", "data" => $quiz]);
         } catch(Exception $e) {
+            http_response_code(500);
             echo json_encode(["status" => "error", "mensaje" => $e->getMessage()]);
         }
         break;
 
+    // 3. CREAR UN NUEVO QUIZ
     case 'crear':
         try {
-            $categoria_id = $_POST['q_categoria'] ?? 1; 
-            $titulo = $_POST['q_titulo'] ?? '';
-            $dificultad = $_POST['q_dificultad'] ?? 'Fácil';
-            $tiempo = $_POST['q_tiempo'] ?? 30;
+            $titulo       = trim($data['titulo'] ?? $data['q_titulo'] ?? '');
+            $categoria_id = $data['categoria_id'] ?? $data['q_categoria_id'] ?? $data['q_categoria'] ?? null;
+            $dificultad   = $data['dificultad'] ?? $data['q_dificultad'] ?? 'Medio';
+            $tiempo       = $data['tiempo_pregunta'] ?? $data['q_tiempo'] ?? 30;
+            $preguntas    = $data['preguntas'] ?? [];
 
-            $query = "INSERT INTO quizzes (categoria_id, titulo, dificultad, tiempo_pregunta) 
-                      VALUES (:cat, :titulo, :dif, :tiempo)";
-            $stmt = $conexion->prepare($query);
-            $stmt->execute([
-                ':cat' => $categoria_id,
-                ':titulo' => $titulo,
-                ':dif' => $dificultad,
-                ':tiempo' => $tiempo
-            ]);
-            $id_quiz = $conexion->lastInsertId();
-            echo json_encode(["status" => "success", "id" => $id_quiz, "mensaje" => "Quiz creado correctamente."]);
-        } catch(Exception $e) {
-            echo json_encode(["status" => "error", "mensaje" => "Error BD: " . $e->getMessage()]);
-        }
-        break;
-
-    case 'editar':
-        try {
-            $id = $_POST['edit_q_id'] ?? null;
-            $titulo = $_POST['edit_q_nombre'] ?? '';
-            $categoria = $_POST['edit_q_categoria'] ?? '';
-            $dificultad = $_POST['edit_q_nivel'] ?? 'Fácil';
-            $tiempo = $_POST['edit_q_tiempo'] ?? 30;
-            
-            if(!$id) throw new Exception("ID del quiz no proporcionado.");
-
-            // 1. Extraer y asegurar que el JSON sea sí o sí un Array
-            $preguntas_json = $_POST['preguntas_edit'] ?? '[]';
-            $preguntas = json_decode($preguntas_json, true);
-            
-            // BLINDAJE: Si json_decode falla y devuelve null, lo forzamos a array vacío
-            if (!is_array($preguntas)) {
-                $preguntas = [];
+            if (empty($titulo) || !$categoria_id) {
+                http_response_code(400);
+                echo json_encode(["status" => "error", "mensaje" => "El título y la categoría son obligatorios."]);
+                exit;
             }
 
-            // 2. Actualizar la tabla principal (Quiz)
-            $query = "UPDATE quizzes 
-                      SET titulo = :titulo, 
-                          categoria_id = :categoria, 
-                          dificultad = :dificultad, 
-                          tiempo_pregunta = :tiempo 
-                      WHERE id = :id";
+            $conexion->beginTransaction();
+
+            $query = "INSERT INTO quizzes (titulo, categoria_id, dificultad, tiempo_pregunta) 
+                      VALUES (:titulo, :categoria_id, :dificultad, :tiempo) RETURNING id";
             $stmt = $conexion->prepare($query);
             $stmt->execute([
-                ':titulo' => $titulo,
-                ':categoria' => $categoria,
-                ':dificultad' => $dificultad,
-                ':tiempo' => $tiempo,
-                ':id' => $id
+                ':titulo'       => $titulo,
+                ':categoria_id' => $categoria_id,
+                ':dificultad'   => $dificultad,
+                ':tiempo'       => $tiempo
             ]);
 
-            // 3. Limpiar las preguntas viejas SIEMPRE
-            // Lo sacamos del "if" para garantizar que no queden datos basura
-            $stmtDel = $conexion->prepare("DELETE FROM preguntas WHERE quiz_id = :quiz_id");
-            $stmtDel->execute([':quiz_id' => $id]);
+            $quiz_id = $stmt->fetchColumn();
 
-            // 4. Insertar las preguntas nuevas (solo si hay alguna en el array)
-            if (count($preguntas) > 0) {
-                // AQUÍ ESTÁ LA MAGIA: Nombres de columnas exactamente iguales a tu tabla
-                $stmtIns = $conexion->prepare("INSERT INTO preguntas (quiz_id, enunciado, opcion_a, opcion_b, opcion_c, opcion_d, respuesta_correcta) 
-                                               VALUES (:quiz_id, :enun, :a, :b, :c, :d, :resp)");
-                
-                foreach($preguntas as $p) {
-                    $stmtIns->execute([
-                        ':quiz_id' => $id,
-                        // Usamos ?? para atrapar el dato sin importar cómo lo llame el JS
-                        ':enun' => $p['pregunta'] ?? $p['enunciado'] ?? '',
-                        ':a' => $p['opcion_a'] ?? '',
-                        ':b' => $p['opcion_b'] ?? '',
-                        ':c' => $p['opcion_c'] ?? '',
-                        ':d' => $p['opcion_d'] ?? '',
-                        ':resp' => $p['correcta'] ?? $p['respuesta_correcta'] ?? 'A'
+            if (!empty($preguntas) && is_array($preguntas)) {
+                $stmtP = $conexion->prepare("
+                    INSERT INTO preguntas (quiz_id, enunciado, opcion_a, opcion_b, opcion_c, opcion_d, respuesta_correcta) 
+                    VALUES (:q_id, :enun, :a, :b, :c, :d, :resp)
+                ");
+                foreach ($preguntas as $p) {
+                    $stmtP->execute([
+                        ':q_id' => $quiz_id,
+                        ':enun' => $p['enunciado'] ?? $p['pregunta'] ?? '',
+                        ':a'    => $p['opcion_a'] ?? $p['a'] ?? '',
+                        ':b'    => $p['opcion_b'] ?? $p['b'] ?? '',
+                        ':c'    => $p['opcion_c'] ?? $p['c'] ?? '',
+                        ':d'    => $p['opcion_d'] ?? $p['d'] ?? '',
+                        ':resp' => $p['respuesta_correcta'] ?? $p['correcta'] ?? 'A'
                     ]);
                 }
             }
-            
-            echo json_encode(["status" => "success", "mensaje" => "Quiz actualizado correctamente."]);
+
+            $conexion->commit();
+
+            http_response_code(201);
+            echo json_encode([
+                "status"  => "success", 
+                "mensaje" => "Quiz creado correctamente.", 
+                "id"      => $quiz_id, 
+                "quiz_id" => $quiz_id
+            ]);
         } catch(Exception $e) {
-            // Ahora si falla algo, devolverá un JSON limpio con el error real
+            if ($conexion->inTransaction()) {
+                $conexion->rollBack();
+            }
+            http_response_code(500);
             echo json_encode(["status" => "error", "mensaje" => "Error BD: " . $e->getMessage()]);
         }
         break;
 
+    // 4. EDITAR UN QUIZ EXISTENTE
+    case 'editar':
+        try {
+            $id           = $data['id'] ?? $data['quiz_id'] ?? $data['q_id'] ?? null;
+            $titulo       = trim($data['titulo'] ?? $data['q_titulo'] ?? '');
+            $categoria_id = $data['categoria_id'] ?? $data['q_categoria_id'] ?? $data['q_categoria'] ?? null;
+            $dificultad   = $data['dificultad'] ?? $data['q_dificultad'] ?? 'Medio';
+            $tiempo       = $data['tiempo_pregunta'] ?? $data['q_tiempo'] ?? 30;
+
+            // Soporta tanto arreglo plano como cadena JSON codificada desde FormData
+            $preguntas = $data['preguntas'] ?? null;
+            if (isset($data['preguntas_edit']) && is_string($data['preguntas_edit'])) {
+                $preguntas = json_decode($data['preguntas_edit'], true);
+            }
+
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(["status" => "error", "mensaje" => "ID de Quiz no especificado."]);
+                exit;
+            }
+
+            $conexion->beginTransaction();
+
+            $query = "UPDATE quizzes 
+                      SET titulo = :titulo, categoria_id = :categoria_id, dificultad = :dificultad, tiempo_pregunta = :tiempo 
+                      WHERE id = :id";
+            $stmt = $conexion->prepare($query);
+            $stmt->execute([
+                ':titulo'       => $titulo,
+                ':categoria_id' => $categoria_id,
+                ':dificultad'   => $dificultad,
+                ':tiempo'       => $tiempo,
+                ':id'           => $id
+            ]);
+
+            if (is_array($preguntas)) {
+                $conexion->prepare("DELETE FROM preguntas WHERE quiz_id = :id")->execute([':id' => $id]);
+
+                $stmtP = $conexion->prepare("
+                    INSERT INTO preguntas (quiz_id, enunciado, opcion_a, opcion_b, opcion_c, opcion_d, respuesta_correcta) 
+                    VALUES (:q_id, :enun, :a, :b, :c, :d, :resp)
+                ");
+                foreach ($preguntas as $p) {
+                    $stmtP->execute([
+                        ':q_id' => $id,
+                        ':enun' => $p['enunciado'] ?? $p['pregunta'] ?? '',
+                        ':a'    => $p['opcion_a'] ?? $p['a'] ?? '',
+                        ':b'    => $p['opcion_b'] ?? $p['b'] ?? '',
+                        ':c'    => $p['opcion_c'] ?? $p['c'] ?? '',
+                        ':d'    => $p['opcion_d'] ?? $p['d'] ?? '',
+                        ':resp' => $p['respuesta_correcta'] ?? $p['correcta'] ?? 'A'
+                    ]);
+                }
+            }
+
+            $conexion->commit();
+
+            http_response_code(200);
+            echo json_encode(["status" => "success", "mensaje" => "Quiz actualizado correctamente."]);
+        } catch(Exception $e) {
+            if ($conexion->inTransaction()) {
+                $conexion->rollBack();
+            }
+            http_response_code(500);
+            echo json_encode(["status" => "error", "mensaje" => "Error BD: " . $e->getMessage()]);
+        }
+        break;
+
+    // 5. ELIMINAR UN QUIZ
     case 'eliminar':
         try {
-            $id = $_POST['id'] ?? null;
+            $id = $data['id'] ?? null;
+
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(["status" => "error", "mensaje" => "ID de Quiz no especificado."]);
+                exit;
+            }
+
             $stmt = $conexion->prepare("DELETE FROM quizzes WHERE id = :id");
             $stmt->execute([':id' => $id]);
-            echo json_encode(["status" => "success", "mensaje" => "Quiz y sus preguntas eliminados."]);
+
+            http_response_code(200);
+            echo json_encode(["status" => "success", "mensaje" => "Quiz eliminada correctamente."]);
         } catch(Exception $e) {
+            http_response_code(500);
             echo json_encode(["status" => "error", "mensaje" => $e->getMessage()]);
         }
         break;
 
     default:
-        echo json_encode(["status" => "error", "mensaje" => "Acción no válida"]);
+        http_response_code(400);
+        echo json_encode(["status" => "error", "mensaje" => "Acción no válida."]);
         break;
 }
 ?>

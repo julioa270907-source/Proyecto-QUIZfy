@@ -918,18 +918,29 @@ async function abrirModalEditarQuiz(id) {
         const result = await response.json();
 
         if (result.status === 'success') {
-            const quiz = result.data.quiz;
-            preguntasEditando = result.data.preguntas || []; 
+            const quiz = result.data;
+            
+            // Normalizar la estructura de las preguntas leídas de la BD
+            preguntasEditando = (result.data.preguntas || []).map(p => ({
+                id: p.id || null,
+                enunciado: p.enunciado || p.pregunta || '',
+                opcion_a: p.opcion_a || p.a || '',
+                opcion_b: p.opcion_b || p.b || '',
+                opcion_c: p.opcion_c || p.c || '',
+                opcion_d: p.opcion_d || p.d || '',
+                respuesta_correcta: p.respuesta_correcta || p.correcta || 'A'
+            }));
+            
             pregEditIndex = 0;
 
-            // Mapeo corregido con las columnas de tu BD:
+            // Asignar datos principales a los inputs del modal
             document.getElementById('edit-q-id').value = quiz.id;
             document.getElementById('edit-q-nombre').value = quiz.titulo;
             document.getElementById('edit-q-categoria').value = quiz.categoria_id;
-            document.getElementById('edit-q-nivel').value = quiz.dificultad; // <-- 'dificultad' en lugar de 'nivel'
-            document.getElementById('edit-q-tiempo').value = quiz.tiempo_pregunta; // <-- 'tiempo_pregunta' en lugar de 'tiempo_segundos'
+            document.getElementById('edit-q-nivel').value = quiz.dificultad;
+            document.getElementById('edit-q-tiempo').value = quiz.tiempo_pregunta;
 
-            // Mostrar la primera pregunta
+            // Mostrar la primera pregunta en los campos de edición
             if (preguntasEditando.length > 0) {
                 cargarPreguntaEditUI();
             }
@@ -941,7 +952,7 @@ async function abrirModalEditarQuiz(id) {
         }
     } catch (error) {
         console.error(error);
-        Swal.fire('Error', 'Hubo un fallo de conexión', 'error');
+        Swal.fire('Error', 'Hubo un fallo de conexión al cargar el quiz', 'error');
     }
 }
 
@@ -952,35 +963,47 @@ function cargarPreguntaEditUI() {
     const p = preguntasEditando[pregEditIndex];
     document.getElementById('lblNumPreguntaEdit').innerText = pregEditIndex + 1;
     
-    // Leemos exactamente lo que manda la BD: enunciado y respuesta_correcta
-    document.getElementById('editTxtPregunta').value = p.enunciado || p.pregunta || '';
+    document.getElementById('editTxtPregunta').value = p.enunciado || '';
     document.getElementById('editRespA').value = p.opcion_a || '';
     document.getElementById('editRespB').value = p.opcion_b || '';
     document.getElementById('editRespC').value = p.opcion_c || '';
     document.getElementById('editRespD').value = p.opcion_d || '';
-    document.getElementById('editRespCorrecta').value = p.respuesta_correcta || p.correcta || 'A';
+    document.getElementById('editRespCorrecta').value = p.respuesta_correcta || 'A';
 }
 
 // 3. Guardar lo que está escrito en los inputs dentro del Array Temporal
 function guardarPreguntaTemporal() {
     if (preguntasEditando.length === 0) return;
 
-    // Leemos directamente de los IDs del HTML
+    // Actualizamos tanto las llaves estándar como los alias para compatibilidad total
+    const enunciadoVal = document.getElementById('editTxtPregunta').value;
+    const respAVal = document.getElementById('editRespA').value;
+    const respBVal = document.getElementById('editRespB').value;
+    const respCVal = document.getElementById('editRespC').value;
+    const respDVal = document.getElementById('editRespD').value;
+    const correctaVal = document.getElementById('editRespCorrecta').value;
+
     preguntasEditando[pregEditIndex] = {
         ...preguntasEditando[pregEditIndex], 
-        pregunta: document.getElementById('editTxtPregunta').value,
-        opcion_a: document.getElementById('editRespA').value,
-        opcion_b: document.getElementById('editRespB').value,
-        opcion_c: document.getElementById('editRespC').value,
-        opcion_d: document.getElementById('editRespD').value,
-        correcta: document.getElementById('editRespCorrecta').value
+        enunciado: enunciadoVal,
+        pregunta: enunciadoVal,
+        opcion_a: respAVal,
+        a: respAVal,
+        opcion_b: respBVal,
+        b: respBVal,
+        opcion_c: respCVal,
+        c: respCVal,
+        opcion_d: respDVal,
+        d: respDVal,
+        respuesta_correcta: correctaVal,
+        correcta: correctaVal
     };
 }
 
 // 4. Botones de Navegación del Modal (Anterior / Siguiente)
 document.getElementById('btnPrevPreguntaEdit')?.addEventListener('click', () => {
     if (pregEditIndex > 0) {
-        guardarPreguntaTemporal(); // Guardamos antes de cambiar
+        guardarPreguntaTemporal(); // Guardar cambios antes de retroceder
         pregEditIndex--;
         cargarPreguntaEditUI();
     }
@@ -988,7 +1011,7 @@ document.getElementById('btnPrevPreguntaEdit')?.addEventListener('click', () => 
 
 document.getElementById('btnNextPreguntaEdit')?.addEventListener('click', () => {
     if (pregEditIndex < preguntasEditando.length - 1) {
-        guardarPreguntaTemporal(); // Guardamos antes de cambiar
+        guardarPreguntaTemporal(); // Guardar cambios antes de avanzar
         pregEditIndex++;
         cargarPreguntaEditUI();
     }
@@ -998,15 +1021,26 @@ document.getElementById('btnNextPreguntaEdit')?.addEventListener('click', () => 
 const formEditarQuiz = document.getElementById('form-editar-quiz');
 if (formEditarQuiz) {
     formEditarQuiz.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Evita que se recargue la página
+        e.preventDefault();
 
-        // Asegurarnos de guardar la última pregunta que el usuario estaba viendo
+        // Guardar la pregunta visible al momento del submit
         guardarPreguntaTemporal();
 
-        const formData = new FormData(formEditarQuiz);
+        // FormData explícito enviando alias compatibles con el backend
+        const formData = new FormData();
         formData.append('accion', 'editar');
+        formData.append('id', document.getElementById('edit-q-id').value);
+        formData.append('q_id', document.getElementById('edit-q-id').value);
+        formData.append('q_titulo', document.getElementById('edit-q-nombre').value);
+        formData.append('titulo', document.getElementById('edit-q-nombre').value);
+        formData.append('q_categoria', document.getElementById('edit-q-categoria').value);
+        formData.append('categoria_id', document.getElementById('edit-q-categoria').value);
+        formData.append('q_dificultad', document.getElementById('edit-q-nivel').value);
+        formData.append('dificultad', document.getElementById('edit-q-nivel').value);
+        formData.append('q_tiempo', document.getElementById('edit-q-tiempo').value);
+        formData.append('tiempo_pregunta', document.getElementById('edit-q-tiempo').value);
         
-        // Convertimos nuestro Array Temporal de preguntas a texto plano para enviarlo
+        // Convertir el arreglo temporal de preguntas a JSON
         formData.append('preguntas_edit', JSON.stringify(preguntasEditando));
 
         try {
@@ -1016,16 +1050,16 @@ if (formEditarQuiz) {
             if (result.status === 'success') {
                 Swal.fire({
                     toast: true, position: 'top-end', showConfirmButton: false, timer: 2000,
-                    icon: 'success', title: 'Quiz actualizado completo', background: '#151a24', color: '#fff'
+                    icon: 'success', title: 'Quiz actualizado correctamente', background: '#151a24', color: '#fff'
                 });
-                document.getElementById('modal-editar-quiz').style.display = 'none'; // Cerramos modal
-                cargarQuizzes(); // Recargamos la tabla principal
+                document.getElementById('modal-editar-quiz').style.display = 'none'; // Cerrar modal
+                cargarQuizzes(); // Recargar las tarjetas en el Dashboard
             } else {
-                Swal.fire('Error', result.mensaje, 'error');
+                Swal.fire('Error', result.mensaje || 'Error al actualizar el Quiz', 'error');
             }
         } catch (error) {
             console.error(error);
-            Swal.fire('Error', 'Problema al actualizar el Quiz', 'error');
+            Swal.fire('Error', 'Problema al conectar con la API de Quizzes', 'error');
         }
     });
 }
