@@ -316,3 +316,84 @@ function abrirTienda() {
 function cerrarTienda() {
   mostrarVista('dashboard');
 }
+
+// ==========================================
+// MÓDULO: AVATAR STUDIO (TIENDA)
+// ==========================================
+
+function abrirTienda() {
+    document.getElementById('vista-dashboard').classList.add('d-none');
+    const vistaTienda = document.getElementById('vista-tienda');
+    vistaTienda.classList.remove('d-none');
+    
+    // Animación de entrada para todo el modal
+    vistaTienda.classList.add('animate__animated', 'animate__fadeIn');
+    
+    const nombreActual = document.getElementById('lbl-nombre-usuario').innerText;
+    document.getElementById('editor-nombre-usuario').innerText = nombreActual;
+
+    document.querySelector('.tab-tienda').click();
+}
+
+function cerrarTienda() {
+    document.getElementById('vista-tienda').classList.add('d-none');
+    document.getElementById('vista-dashboard').classList.remove('d-none');
+}
+
+function cambiarPestanaTienda(event, categoria) {
+    // 1. Quitar la clase 'active' de todos los botones de la tienda
+    const tabs = document.querySelectorAll('.tab-tienda');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    // 2. Activar el botón presionado
+    event.target.classList.add('active');
+
+    // 3. Renderizar los ítems en el Grid (Aquí conectarás tu fetch a PostgreSQL después)
+    renderizarGridInventario(categoria);
+}
+
+function renderizarGridInventario(categoria) {
+    const grid = document.getElementById('grid-inventario');
+    
+    // Le agregamos animate__fadeInUp a las tarjetas para que suban al aparecer
+    grid.innerHTML = `
+        <div class="item-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">📦 Ítem 1 (${categoria})</div>
+        <div class="item-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">📦 Ítem 2 (${categoria})</div>
+        <div class="item-card animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">📦 Ítem 3 (${categoria})</div>
+    `;
+    
+    // Animación de "latido" al cuadro del avatar cuando cambias de pestaña
+    const avatarPreview = document.getElementById('canvas-avatar');
+    avatarPreview.classList.remove('animate__animated', 'animate__pulse');
+    void avatarPreview.offsetWidth; // Truco para reiniciar la animación en JS
+    avatarPreview.classList.add('animate__animated', 'animate__pulse');
+}
+
+function quitarTodo() {
+    // Lógica para vaciar el canvas y desequipar (Más adelante harás update a 'usuario_items')
+    const canvas = document.getElementById('canvas-avatar');
+    canvas.innerHTML = '<span>DESNUDO 🫣</span>'; // Broma de programador
+    
+    Swal.fire({
+        toast: true,
+        position: 'bottom-end',
+        icon: 'info',
+        title: 'Se han quitado todos los accesorios',
+        showConfirmButton: false,
+        timer: 2000
+    });
+}
+
+function guardarCambiosAvatar() {
+    // Aquí ejecutarás el fetch POST a tu base de datos para guardar el equipamiento
+    Swal.fire({
+        icon: 'success',
+        title: '¡Look Guardado!',
+        text: 'Tu avatar se ha actualizado con éxito.',
+        confirmColor: '#00e0ff',
+        background: '#151a24',
+        color: '#fff'
+    }).then(() => {
+        cerrarTienda(); // Volvemos al lobby automáticamente
+    });
+}

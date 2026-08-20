@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QUIZfy</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -101,20 +102,53 @@
             </div>
 
         </section>
-        
-        <!-- 🛒 Sección Tienda (oculta al inicio) -->
-<section id="vista-tienda" class="tienda-wrapper d-none">
-    <h2>Tienda de Avatares</h2>
-    <p>Aquí podrás comprar accesorios y personalizar tu avatar.</p>
 
-    <div class="productos">
-        <div class="producto">🎩 Sombrero magico</div>
-        <div class="producto">👕 Camisa épica</div>
-        <div class="producto">🖼️ Marco dorado</div>
-    </div>
+        <section id="vista-tienda" class="avatar-editor d-none">
+            
+            <!-- 🔝 Sección Superior: Controles y Preview del Avatar -->
+            <div class="editor-top-section">
+                
+                <!-- Columna Izquierda: Botón Volver + Avatar Cuadrado -->
+                <div class="editor-top-left">
+                    <button class="btn-outline-excalidraw" onclick="cerrarTienda()" title="Volver">←</button>
+                    
+                    <div class="avatar-preview-square" id="canvas-avatar">
+                        <span>AVATAR PREVIEW</span>
+                    </div>
+                </div>
 
-    <button onclick="cerrarTienda()" class="btn-lobby-outline">Cerrar Tienda</button>
-</section>
+                <!-- Columna Central: Nombre de usuario -->
+                <div class="editor-top-center">
+                    <span id="editor-nombre-usuario" class="username-badge">Nombre de Usuario</span>
+                </div>
+
+                <!-- Columna Derecha: Guardar -->
+                <div class="editor-top-right">
+                    <button class="btn-outline-excalidraw btn-guardar" onclick="guardarCambiosAvatar()">Guardar cambios</button>
+                </div>
+
+            </div>
+
+            <!-- Pestañas y Acción Rápida -->
+            <div class="editor-controls">
+                <div class="tabs">
+                    <button class="tab-btn tab-tienda active" onclick="cambiarPestanaTienda(event, 'cabeza')">cabeza</button>
+                    <button class="tab-btn tab-tienda" onclick="cambiarPestanaTienda(event, 'ropa')">ropa</button>
+                    <button class="tab-btn tab-tienda" onclick="cambiarPestanaTienda(event, 'accesorios')">accesorios</button>
+                    <button class="tab-btn tab-tienda" onclick="cambiarPestanaTienda(event, 'marco')">marco</button>
+                </div>
+                <button class="btn-reset" onclick="quitarTodo()">Quitar todo</button>
+            </div>
+
+            <!-- Contenedor del Inventario/Tienda (La caja inferior grande) -->
+            <div class="items-grid-container">
+                <div id="grid-inventario" class="items-grid">
+                    <!-- Los items se inyectarán aquí por JavaScript -->
+                    <p style="color: #666; text-align: center; grid-column: 1 / -1;">Cargando ítems...</p>
+                </div>
+            </div>
+
+        </section>
 
 
     </main>
