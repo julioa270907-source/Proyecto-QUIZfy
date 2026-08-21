@@ -218,63 +218,118 @@ function animarMensajeBienvenida(usuario) {
     }, 2500);
 }
 
-// ----------------------------------------------------
+// ==========================================
+// ESTADO GLOBAL (Al inicio para evitar cierres de alcance)
+// ==========================================
+let inventarioGlobal = [];
+let estadoAvatar = {
+    ruta_imagen_base: 'img/avatars/default.svg',
+    nombre_base: 'Personaje',
+    equipados: {
+        'Cabeza': null,
+        'Rostro': null,
+        'Cuerpo': null
+    }
+};
+
+// ==========================================
 // GESTIÓN Y RENDERIZADO DEL AVATAR
-// ----------------------------------------------------
+// ==========================================
+
 async function cargarAvatarUsuario() {
     try {
-        const response = await fetch('api/api_avatar.php?accion=obtener_avatar');
+        const response = await fetch('api/api_avatar.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accion: 'obtener_avatar' })
+        });
         const res = await response.json();
 
         if (res.status === 'success' && res.avatar) {
-            renderizarAvatarHTML(res.avatar);
-        } else {
-            renderizarAvatarDefecto();
+            estadoAvatar.ruta_imagen_base = res.avatar.ruta_imagen;
+            estadoAvatar.nombre_base = res.avatar.personaje_nombre;
+            
+            res.avatar.items_equipados.forEach(item => {
+                estadoAvatar.equipados[item.categoria] = item;
+            });
         }
     } catch (error) {
-        console.error('Error al cargar el avatar:', error);
-        renderizarAvatarDefecto();
+        console.error("Error al cargar avatar", error);
+    } finally {
+        renderizarAvatarEnDOM('canvas-avatar');
+        renderizarAvatarEnDOM('display-lobby-avatar'); 
     }
 }
 
-function renderizarAvatarHTML(avatar) {
-    const contenedor = document.querySelector('.avatar-display');
+function renderizarAvatarEnDOM(contenedorId) {
+    const contenedor = document.getElementById(contenedorId) || document.querySelector('.avatar-display');
     if (!contenedor) return;
 
-    contenedor.style.position = 'relative';
+    contenedor.style.cssText = `
+        position: relative;
+        overflow: hidden;
+        background-color: transparent;
+    `;
     contenedor.innerHTML = ''; 
 
     // 1. Capa Base: Personaje
     const imgBase = document.createElement('img');
-    imgBase.src = avatar.ruta_imagen;
-    imgBase.alt = avatar.personaje_nombre || 'Personaje Base';
-    imgBase.style.width = '100%';
-    imgBase.style.height = '100%';
-    imgBase.style.objectFit = 'contain';
-    imgBase.style.position = 'absolute';
-    imgBase.style.zIndex = '1';
+    imgBase.src = estadoAvatar.ruta_imagen_base || 'img/avatars/default.svg';
+    imgBase.alt = estadoAvatar.nombre_base || 'Personaje';
+    imgBase.style.cssText = 'width: 100%; height: 100%; object-fit: contain; position: absolute; z-index: 1; top: 0; left: 0;';
     contenedor.appendChild(imgBase);
 
     // 2. Capas de Accesorios Equipados
-    if (avatar.items_equipados && Array.isArray(avatar.items_equipados)) {
-        avatar.items_equipados.forEach((item, index) => {
+    Object.values(estadoAvatar.equipados).forEach((item) => {
+        if (item) {
             const imgItem = document.createElement('img');
             imgItem.src = item.ruta_svg;
-            imgItem.alt = item.item_nombre;
-            imgItem.style.position = 'absolute';
-            imgItem.style.width = `${item.width}px`;
-            imgItem.style.left = `${item.pos_x}px`;
-            imgItem.style.top = `${item.pos_y}px`;
-            imgItem.style.transform = `rotate(${item.rotacion}deg)`;
-            imgItem.style.zIndex = (index + 2).toString();
+            imgItem.className = 'capa-accesorio';
             
+            let zIndex = 2;
+            if (item.categoria === 'Cuerpo') zIndex = 2;
+            if (item.categoria === 'Rostro') zIndex = 3;
+            if (item.categoria === 'Cabeza') zIndex = 4;
+
+            // Comprobamos si el ítem trae coordenadas de la base de datos
+            const tieneOffsets = item.width !== undefined && item.pos_x !== undefined && item.pos_y !== undefined;
+
+            if (tieneOffsets) {
+                // Escala relativa basada en la cuadrícula de 300px
+                const porcentajeAncho = (Number(item.width) / 300) * 100;
+                const porcentajeX = (Number(item.pos_x) / 300) * 100;
+                const porcentajeY = (Number(item.pos_y) / 300) * 100;
+
+                imgItem.style.cssText = `
+                    position: absolute;
+                    width: ${porcentajeAncho}%;
+                    left: ${porcentajeX}%;
+                    top: ${porcentajeY}%;
+                    transform: rotate(${item.rotacion || 0}deg);
+                    z-index: ${zIndex};
+                    pointer-events: none;
+                `;
+            } else {
+                // Posicionamiento de respaldo cuando se prueba un ítem nuevo desde la tienda
+                imgItem.style.cssText = `
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    top: 0;
+                    left: 0;
+                    object-fit: contain;
+                    z-index: ${zIndex};
+                    pointer-events: none;
+                `;
+            }
+
             contenedor.appendChild(imgItem);
-        });
-    }
+        }
+    });
 }
 
 function renderizarAvatarDefecto() {
-    const contenedor = document.querySelector('.avatar-display');
+    const contenedor = document.getElementById('canvas-avatar') || document.querySelector('.avatar-display');
     if (!contenedor) return;
 
     contenedor.style.position = 'relative';
@@ -285,94 +340,117 @@ function renderizarAvatarDefecto() {
     `;
 }
 
-// MODULO DE TIENDA, INGRESAR A LA TIENDA
+// ==========================================
+// MÓDULO: NAVEGACIÓN Y VISTAS
+// ==========================================
 
-// Extensión de mostrarVista para incluir la tienda
 function mostrarVista(vista) {
     const vistaAuth = document.getElementById('vista-auth');
     const vistaDashboard = document.getElementById('vista-dashboard');
     const vistaTienda = document.getElementById('vista-tienda');
 
-    if (vista === 'auth') {
-        vistaAuth.classList.remove('d-none');
-        vistaDashboard.classList.add('d-none');
-        vistaTienda.classList.add('d-none');
-    } else if (vista === 'dashboard') {
-        vistaAuth.classList.add('d-none');
-        vistaDashboard.classList.remove('d-none');
-        vistaTienda.classList.add('d-none');
-    } else if (vista === 'tienda') {
-        vistaAuth.classList.add('d-none');
-        vistaDashboard.classList.add('d-none');
-        vistaTienda.classList.remove('d-none');
+    if (vistaAuth) vistaAuth.classList.toggle('d-none', vista !== 'auth');
+    if (vistaDashboard) vistaDashboard.classList.toggle('d-none', vista !== 'dashboard');
+    if (vistaTienda) vistaTienda.classList.toggle('d-none', vista !== 'tienda');
+}
+
+function abrirTienda() {
+    mostrarVista('tienda');
+    
+    const vistaTienda = document.getElementById('vista-tienda');
+    if (vistaTienda) {
+        vistaTienda.classList.add('animate__animated', 'animate__fadeIn');
+    }
+    
+    const elNombreActual = document.getElementById('lbl-nombre-usuario');
+    const elNombreEditor = document.getElementById('editor-nombre-usuario');
+    if (elNombreActual && elNombreEditor) {
+        elNombreEditor.innerText = elNombreActual.innerText;
+    }
+
+    const tabCabeza = document.querySelector('.tab-tienda');
+    if (tabCabeza) {
+        tabCabeza.click();
+    } else {
+        renderizarGridInventario('Cabeza');
     }
 }
 
-// Reutiliza mostrarVista en tus funciones de tienda
-function abrirTienda() {
-  mostrarVista('tienda');
-}
-
 function cerrarTienda() {
-  mostrarVista('dashboard');
+    mostrarVista('dashboard');
 }
 
 // ==========================================
-// MÓDULO: AVATAR STUDIO (TIENDA)
+// MÓDULO: TIENDA E INVENTARIO
 // ==========================================
-
-function abrirTienda() {
-    document.getElementById('vista-dashboard').classList.add('d-none');
-    const vistaTienda = document.getElementById('vista-tienda');
-    vistaTienda.classList.remove('d-none');
-    
-    // Animación de entrada para todo el modal
-    vistaTienda.classList.add('animate__animated', 'animate__fadeIn');
-    
-    const nombreActual = document.getElementById('lbl-nombre-usuario').innerText;
-    document.getElementById('editor-nombre-usuario').innerText = nombreActual;
-
-    document.querySelector('.tab-tienda').click();
-}
-
-function cerrarTienda() {
-    document.getElementById('vista-tienda').classList.add('d-none');
-    document.getElementById('vista-dashboard').classList.remove('d-none');
-}
 
 function cambiarPestanaTienda(event, categoria) {
-    // 1. Quitar la clase 'active' de todos los botones de la tienda
     const tabs = document.querySelectorAll('.tab-tienda');
     tabs.forEach(tab => tab.classList.remove('active'));
     
-    // 2. Activar el botón presionado
-    event.target.classList.add('active');
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
 
-    // 3. Renderizar los ítems en el Grid (Aquí conectarás tu fetch a PostgreSQL después)
     renderizarGridInventario(categoria);
 }
 
 function renderizarGridInventario(categoria) {
     const grid = document.getElementById('grid-inventario');
+    if (!grid) return;
     
-    // Le agregamos animate__fadeInUp a las tarjetas para que suban al aparecer
-    grid.innerHTML = `
-        <div class="item-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">📦 Ítem 1 (${categoria})</div>
-        <div class="item-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">📦 Ítem 2 (${categoria})</div>
-        <div class="item-card animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">📦 Ítem 3 (${categoria})</div>
-    `;
-    
-    // Animación de "latido" al cuadro del avatar cuando cambias de pestaña
+    grid.innerHTML = '';
+
+    const itemsFiltrados = inventarioGlobal.filter(
+        item => item.categoria.toLowerCase() === categoria.toLowerCase()
+    );
+
+    if (itemsFiltrados.length === 0) {
+        grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #888; padding: 20px;">No hay accesorios disponibles en esta categoría.</p>`;
+    } else {
+        itemsFiltrados.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'item-card animate__animated animate__fadeInUp';
+            card.style.animationDelay = `${index * 0.05}s`;
+
+            card.innerHTML = `
+                <div class="item-icon-wrap">
+                    <img src="${item.ruta_svg}" alt="${item.nombre}" style="width: 50px; height: 50px; object-fit: contain;">
+                </div>
+                <span class="item-name">${item.nombre}</span>
+                <span class="item-price">🪙 ${Number(item.precio).toFixed(0)}</span>
+            `;
+
+            card.addEventListener('click', () => seleccionarItem(item));
+            grid.appendChild(card);
+        });
+    }
+
     const avatarPreview = document.getElementById('canvas-avatar');
-    avatarPreview.classList.remove('animate__animated', 'animate__pulse');
-    void avatarPreview.offsetWidth; // Truco para reiniciar la animación en JS
-    avatarPreview.classList.add('animate__animated', 'animate__pulse');
+    if (avatarPreview) {
+        avatarPreview.classList.remove('animate__animated', 'animate__pulse');
+        void avatarPreview.offsetWidth;
+        avatarPreview.classList.add('animate__animated', 'animate__pulse');
+    }
+}
+
+// ==========================================
+// ACCIONES DE LA TIENDA (PREVIEW Y GUARDADO)
+// ==========================================
+
+function seleccionarItem(item) {
+    estadoAvatar.equipados[item.categoria] = item;
+    renderizarAvatarEnDOM('canvas-avatar');
 }
 
 function quitarTodo() {
-    // Lógica para vaciar el canvas y desequipar (Más adelante harás update a 'usuario_items')
-    const canvas = document.getElementById('canvas-avatar');
-    canvas.innerHTML = '<span>DESNUDO 🫣</span>'; // Broma de programador
+    estadoAvatar.equipados = {
+        'Cabeza': null,
+        'Rostro': null,
+        'Cuerpo': null
+    };
+    
+    renderizarAvatarEnDOM('canvas-avatar');
     
     Swal.fire({
         toast: true,
@@ -384,16 +462,89 @@ function quitarTodo() {
     });
 }
 
-function guardarCambiosAvatar() {
-    // Aquí ejecutarás el fetch POST a tu base de datos para guardar el equipamiento
-    Swal.fire({
-        icon: 'success',
-        title: '¡Look Guardado!',
-        text: 'Tu avatar se ha actualizado con éxito.',
-        confirmColor: '#00e0ff',
-        background: '#151a24',
-        color: '#fff'
-    }).then(() => {
-        cerrarTienda(); // Volvemos al lobby automáticamente
-    });
+async function guardarCambiosAvatar() {
+    const idsEquipados = Object.values(estadoAvatar.equipados)
+        .filter(item => item !== null)
+        .map(item => item.item_id || item.id);
+
+    try {
+        const response = await fetch('api/api_avatar.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                accion: 'guardar_equipamiento',
+                items_ids: idsEquipados
+            })
+        });
+
+        const res = await response.json();
+
+        if (res.status === 'success') {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Look Guardado!',
+                text: 'Tu avatar se ha actualizado con éxito.',
+                confirmColor: '#00e0ff',
+                background: '#151a24',
+                color: '#fff'
+            }).then(() => {
+                renderizarAvatarEnDOM('display-lobby-avatar');
+                cerrarTienda();
+            });
+        } else {
+            throw new Error(res.mensaje);
+        }
+    } catch (error) {
+        Swal.fire('Error', 'No se pudieron guardar los cambios', 'error');
+    }
 }
+
+// ==========================================
+// PETICIONES API E INICIALIZACIÓN
+// ==========================================
+
+async function cargarItemsTienda() {
+    try {
+        const respuesta = await fetch('api/api_items.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accion: 'leer' })
+        });
+
+        const datos = await respuesta.json();
+
+        if (datos.status === 'success') {
+            inventarioGlobal = datos.data;
+            renderizarGridInventario('Cabeza');
+        }
+    } catch (error) {
+        // Captura silenciosa de errores
+    }
+}
+
+async function cargarMonedasUsuario() {
+    try {
+        const respuesta = await fetch('api/api_auth.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accion: 'verificar_sesion' })
+        });
+        
+        const datos = await respuesta.json();
+        
+        if (datos.status === 'authenticated' && datos.usuario) {
+            const elMonedas = document.getElementById('user-coins');
+            if (elMonedas) {
+                elMonedas.textContent = Number(datos.usuario.monedas).toLocaleString();
+            }
+        }
+    } catch (error) {
+        // Captura silenciosa de errores
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    cargarItemsTienda();
+    cargarAvatarUsuario();
+    cargarMonedasUsuario();
+});

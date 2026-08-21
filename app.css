@@ -638,6 +638,17 @@ body {
         justify-content: center;
     }
 
+    /* 🏷️ Forzamos anchos en móvil para el nombre, monedas y botón guardar */
+    .username-badge, 
+    .coin-indicator, /* <-- Agregamos esta clase aquí */
+    .btn-outline-excalidraw.btn-guardar {
+        width: 100% !important;
+        max-width: 280px; 
+        min-width: 0 !important; 
+        box-sizing: border-box;
+        text-align: center;
+    }
+
     .editor-top-left {
         width: 100%;
         display: flex;
@@ -746,9 +757,37 @@ ZONA SUPERIOR (HEADER + AVATAR) ESTILO EXCALIDRAW
 
 .editor-top-center {
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    flex-direction: column; /* Apila los elementos verticalmente */
+    align-items: center;
+    gap: 12px; /* Espacio entre el nombre y las monedas */
     padding-top: 10px;
+}
+
+/* 🪙 Estilo del Indicador de Monedas */
+.coin-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 215, 0, 0.1); /* Fondo dorado semi-transparente */
+    border: 2px solid #ffd700;
+    color: #ffd700;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); /* Brillo sutil */
+    transition: transform 0.2s ease;
+    cursor: default;
+}
+
+.coin-indicator:hover {
+    transform: scale(1.05); /* Pequeño efecto al pasar el mouse */
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.coin-icon {
+    font-size: 18px;
 }
 
 .editor-top-right {
@@ -784,6 +823,13 @@ ZONA SUPERIOR (HEADER + AVATAR) ESTILO EXCALIDRAW
     color: #888;
     font-size: 14px;
     font-weight: bold;
+    position: relative; /* Clave para que los overlays no se salgan */
+    overflow: hidden;
+}
+
+.avatar-layer {
+    position: absolute;
+    pointer-events: none; /* Para que no bloqueen clicks */
 }
 
 /* 🎨 Botones estilo "Outline" */

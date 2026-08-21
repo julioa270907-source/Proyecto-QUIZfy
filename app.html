@@ -89,7 +89,7 @@
             </header>
 
             <div class="lobby-stage">
-                <div class="avatar-display">
+                <div class="avatar-display" id="display-lobby-avatar">
                     <span>AVATAR</span>
                 </div>
                 <h2 id="lbl-nombre-usuario" class="player-name">Jugador</h2>
@@ -120,6 +120,11 @@
                 <!-- Columna Central: Nombre de usuario -->
                 <div class="editor-top-center">
                     <span id="editor-nombre-usuario" class="username-badge">Nombre de Usuario</span>
+                    
+                    <div class="coin-indicator" title="Monedas disponibles">
+                        <span class="coin-icon">🪙</span>
+                        <span id="user-coins">0</span>
+                    </div>
                 </div>
 
                 <!-- Columna Derecha: Guardar -->
@@ -132,10 +137,9 @@
             <!-- Pestañas y Acción Rápida -->
             <div class="editor-controls">
                 <div class="tabs">
-                    <button class="tab-btn tab-tienda active" onclick="cambiarPestanaTienda(event, 'cabeza')">cabeza</button>
-                    <button class="tab-btn tab-tienda" onclick="cambiarPestanaTienda(event, 'ropa')">ropa</button>
-                    <button class="tab-btn tab-tienda" onclick="cambiarPestanaTienda(event, 'accesorios')">accesorios</button>
-                    <button class="tab-btn tab-tienda" onclick="cambiarPestanaTienda(event, 'marco')">marco</button>
+                    <button class="tab-btn tab-tienda active" onclick="cambiarPestanaTienda(event, 'cabeza')">Cabeza</button>
+                    <button class="tab-btn tab-tienda" onclick="cambiarPestanaTienda(event, 'rostro')">Rostro</button>
+                    <button class="tab-btn tab-tienda" onclick="cambiarPestanaTienda(event, 'cuerpo')">Cuerpo</button>
                 </div>
                 <button class="btn-reset" onclick="quitarTodo()">Quitar todo</button>
             </div>
