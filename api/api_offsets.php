@@ -42,15 +42,15 @@ switch($accion) {
             $pos_y = $_POST['pos_y'] ?? 0;
             $rotacion = $_POST['rotacion'] ?? 0;
 
-            // En PostgreSQL, la llave primaria compuesta dispara el "ON CONFLICT"
-            $query = "INSERT INTO personaje_item_offset (personaje_id, item_id, width, pos_x, pos_y, rotacion) 
-                      VALUES (:p_id, :i_id, :w, :x, :y, :r) 
-                      ON CONFLICT (personaje_id, item_id) 
-                      DO UPDATE SET 
-                        width = EXCLUDED.width, 
-                        pos_x = EXCLUDED.pos_x, 
-                        pos_y = EXCLUDED.pos_y, 
-                        rotacion = EXCLUDED.rotacion,
+            // En MySQL, la llave primaria/única compuesta (personaje_id, item_id)
+            // dispara el "ON DUPLICATE KEY UPDATE" (equivalente al ON CONFLICT de PostgreSQL)
+            $query = "INSERT INTO personaje_item_offset (personaje_id, item_id, width, pos_x, pos_y, rotacion)
+                      VALUES (:p_id, :i_id, :w, :x, :y, :r)
+                      ON DUPLICATE KEY UPDATE
+                        width = VALUES(width),
+                        pos_x = VALUES(pos_x),
+                        pos_y = VALUES(pos_y),
+                        rotacion = VALUES(rotacion),
                         fecha_actualizacion = CURRENT_TIMESTAMP";
             
             $stmt = $conexion->prepare($query);
