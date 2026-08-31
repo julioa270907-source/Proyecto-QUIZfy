@@ -1,0 +1,30 @@
+# Evitar que se listen los directorios
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # 1. Permitir que los encabezados de Autorización pasen a PHP
+    # Útil si en el futuro migras de $_SESSION a tokens Bearer JWT
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+</IfModule>
+
+<IfModule mod_headers.c>
+    # 2. Manejo de CORS (Cross-Origin Resource Sharing) a nivel de servidor
+    # Aunque tus archivos PHP ya incluyen 'Access-Control-Allow-Origin: *'[cite: 1], 
+    # los navegadores envían una petición previa "OPTIONS" (Preflight) cuando usas Fetch API con JSON.
+    # Si el servidor no responde a OPTIONS, la ruta falla antes de llegar a tu PHP.
+    
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    
+    # Responder con 200 OK inmediatamente a las peticiones OPTIONS
+    RewriteEngine On
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ $1 [R=200,L]
+</IfModule>
+
+# 3. Configuración de codificación por defecto
+AddDefaultCharset UTF-8
